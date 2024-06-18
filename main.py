@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
-from name import get_balance, get_tickers, find_tickerDone, place_order, get_last_price, get_roundQty, getNextKline, ordersClear
+from name import get_balance, get_tickers, find_tickerDone, place_order, get_last_price, get_roundQty, klineValidation, ordersClear
 from pprint import pprint
 import multiprocessing
 
@@ -44,12 +44,12 @@ def main():
 
                             if str(content).count('🔴') == 1:
                                 if tickerDone in tickers and balance_usdt != 0:
-                                    side = getNextKline(tickerDone, 'Buy', mark_price, roundQty)
+                                    side = klineValidation(tickerDone, 'Buy', mark_price, roundQty)
                                     side = 'Buy'
                                     place_order(tickerDone, side, mark_price, roundQty, balanceWL, tp, sl)
                             if str(content).count('🟢') == 1:
                                 if tickerDone in tickers and balance_usdt != 0:
-                                    side = getNextKline(tickerDone, 'Sell', mark_price, roundQty)
+                                    side = klineValidation(tickerDone, 'Sell', mark_price, roundQty)
                                     side = 'Sell'
                                     place_order(tickerDone, side, mark_price, roundQty, balanceWL, tp, sl)
                             

@@ -64,8 +64,8 @@ def getSR(symbol, roundQty):
     resistance_level = np.round(np.mean(lowest[split_index:]), roundQty[0])
     return support_level, resistance_level
 
-# Получение следующего клайна
-def getNextKline(symbol, side, markPrice, roundQty):
+# Валидация клайна
+def klineValidation(symbol, side, markPrice, roundQty):
     print(f'Создание позиции для {symbol}{datetime.now()}')
     timeNow = int(time.time())
     klines1MinTime = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
