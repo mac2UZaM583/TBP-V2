@@ -38,7 +38,7 @@ def main():
                             tickerDone = find_tickerDone(ticker, tickers)
                             url_count += 1
                             balance_usdt = get_balance()
-                            balanceWL = int((float(balance_usdt) / 10) * 10)
+                            balanceWL = int(float(balance_usdt))
                             mark_price = get_last_price(tickerDone)
                             roundQty =  get_roundQty(tickerDone)
 

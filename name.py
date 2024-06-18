@@ -129,13 +129,16 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                 f'RoundQty: {roundQty}\n'
                 f'Time: {datetime.now()}'
             )
-            # pprint(session.switch_margin_mode(
-            #     category="linear",
-            #     symbol=symbol,
-            #     tradeMode=0,
-            #     buyLeverage="10",
-            #     sellLeverage="10",
-            # ))
+            try:
+                pprint(session.switch_margin_mode(
+                    category="linear",
+                    symbol=symbol,
+                    tradeMode=0,
+                    buyLeverage="10",
+                    sellLeverage="10",
+                ))
+            except Exception as er:
+                print(f'не удалось сменить режим сделки потому что и так все хорошо \n\n {er}')
             resp = session.place_order(
                 category='linear',
                 symbol=symbol,
