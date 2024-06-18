@@ -45,12 +45,10 @@ def main():
                             if str(content).count('🔴') == 1:
                                 if tickerDone in tickers and balance_usdt != 0:
                                     side = klineValidation(tickerDone, 'Buy', mark_price, roundQty)
-                                    side = 'Buy'
                                     place_order(tickerDone, side, mark_price, roundQty, balanceWL, tp, sl)
                             if str(content).count('🟢') == 1:
                                 if tickerDone in tickers and balance_usdt != 0:
                                     side = klineValidation(tickerDone, 'Sell', mark_price, roundQty)
-                                    side = 'Sell'
                                     place_order(tickerDone, side, mark_price, roundQty, balanceWL, tp, sl)
                             
                             # Сохранение значений в текстовой файл
