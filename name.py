@@ -7,14 +7,14 @@ import time
 from pprint import pprint
 
 session = HTTP(
-    demo=True,
+    # demo=True,
     api_key=api_key,
     api_secret=api_secret
 )
 
 # Получение баланса
 def get_balance():
-    response = session.get_wallet_balance(accountType='UNIFIED', coin='USDT')
+    response = session.get_wallet_balance(accountType='CONTRACT', coin='USDT')
     balance = response['result']['list'][0]['coin'][0]['walletBalance']
     return balance
 
@@ -67,48 +67,51 @@ def getSR(symbol, roundQty):
 # Получение следующего клайна
 def getNextKline(symbol, side, markPrice, roundQty):
     print(f'Создание позиции для {symbol}{datetime.now()}')
+    timeNow = int(time.time())
     klines1MinTime = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
+    klineCreateTime = int(klines1MinTime[0][:-3])
     
     # Проверка ведущего клайна
-    run = True
-    while run:
-        print(f'run #1')
-        klines1MinTimeNext = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
-        time.sleep(0.3)
-        if klines1MinTime[0] != klines1MinTimeNext[0]:
-            run = False
-    # Проверка следущего клайна
-    run = True
-    while run:
-        print(f'run #2')
-        klines1MinTimeNext1 = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
-        time.sleep(0.3)
-        if klines1MinTimeNext[0] != klines1MinTimeNext1[0]:
-            klines1MinTimeNext = session.get_kline(symbol=symbol, category='linear', interval='1', limit=2)['result']['list'][1]
-            run = False
-    print(f'run completed^ {run}')
-    
-    # Определение валидности и выдача стороны сделки 
-    support_level, resistance_level = getSR(symbol, roundQty)
-    markPriceS = markPrice - ((markPrice / 100) * 1.5)
-    markPriceR = markPrice + ((markPrice / 100) * 1.5)
-    klineRadius = Decimal(klines1MinTimeNext[2]) - Decimal(klines1MinTimeNext[3])
-    if side == 'Sell':
-        if Decimal(klines1MinTimeNext[1]) > Decimal(klines1MinTimeNext[4]):
-            if Decimal(klines1MinTimeNext[4]) - Decimal(klines1MinTimeNext[3]) < klineRadius - (klineRadius * Decimal(60 / 100)):
-                if markPriceS > support_level:
-                    return side
-                else:
-                    print('сделка не валидна')
-                    return None
-    elif side == 'Buy':
-        if Decimal(klines1MinTimeNext[1]) < Decimal(klines1MinTimeNext[4]):
-            if Decimal(klines1MinTimeNext[4]) - Decimal(klines1MinTimeNext[3]) > klineRadius - (klineRadius * Decimal(40 / 100)):
-                if markPriceR < resistance_level:
-                    return side
-                else:
-                    print('сделка не валидна')
-                    return None
+    if timeNow > klineCreateTime:
+        run = True
+        while run:
+            print(f'run #1')
+            klines1MinTimeNext = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
+            time.sleep(0.3)
+            if klines1MinTime[0] != klines1MinTimeNext[0]:
+                run = False
+        # Проверка следущего клайна
+        run = True
+        while run:
+            print(f'run #2')
+            klines1MinTimeNext1 = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
+            time.sleep(0.3)
+            if klines1MinTimeNext[0] != klines1MinTimeNext1[0]:
+                klines1MinTimeNext = session.get_kline(symbol=symbol, category='linear', interval='1', limit=2)['result']['list'][1]
+                run = False
+        print(f'run completed^ {run}')
+        
+        # Определение валидности и выдача стороны сделки 
+        support_level, resistance_level = getSR(symbol, roundQty)
+        markPriceS = markPrice - ((markPrice / 100) * 1.5)
+        markPriceR = markPrice + ((markPrice / 100) * 1.5)
+        klineRadius = Decimal(klines1MinTimeNext[2]) - Decimal(klines1MinTimeNext[3])
+        if side == 'Sell':
+            if Decimal(klines1MinTimeNext[1]) > Decimal(klines1MinTimeNext[4]):
+                if Decimal(klines1MinTimeNext[4]) - Decimal(klines1MinTimeNext[3]) < klineRadius - (klineRadius * Decimal(60 / 100)):
+                    if markPriceS > support_level:
+                        return side
+                    else:
+                        print('сделка не валидна')
+                        return None
+        elif side == 'Buy':
+            if Decimal(klines1MinTimeNext[1]) < Decimal(klines1MinTimeNext[4]):
+                if Decimal(klines1MinTimeNext[4]) - Decimal(klines1MinTimeNext[3]) > klineRadius - (klineRadius * Decimal(40 / 100)):
+                    if markPriceR < resistance_level:
+                        return side
+                    else:
+                        print('сделка не валидна')
+                        return None
 
 # Публикация ордера
 def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
