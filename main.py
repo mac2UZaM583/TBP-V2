@@ -24,12 +24,11 @@ def main():
             balanceWL = float(balance_usdt)
             mark_price = get_last_price(ticker_tickers[0])
             roundQty =  get_roundQty(ticker_tickers[0])
-            if str(content).count('🔴') == 1:
-                if ticker_tickers[0] in ticker_tickers[1]:
+            if ticker_tickers[0] in ticker_tickers[1]:
+                if str(content).count('🔴') == 1:
                     side = klineValidation(ticker_tickers[0], 'Buy', mark_price, roundQty, timeNow)
                     place_order(ticker_tickers[0], side, mark_price, roundQty, balanceWL, tp, sl)
-            if str(content).count('🟢') == 1:
-                if ticker_tickers[0] in ticker_tickers[1]:
+                if str(content).count('🟢') == 1:
                     side = klineValidation(ticker_tickers[0], 'Sell', mark_price, roundQty, timeNow)
                     place_order(ticker_tickers[0], side, mark_price, roundQty, balanceWL, tp, sl)
 
