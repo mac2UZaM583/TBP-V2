@@ -14,9 +14,9 @@ def main():
     global headers, tp, sl, url_count
     while True:
         try:
+            timeNow = int(time.time())
             url = f'https://t.me/pump_dump_screener_demo/{url_count}'
             content = prsrpp(url, headers)
-            timeNow = int(time.time())
             url_count += 1
                     
             ticker = get_ticker(content)
