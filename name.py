@@ -65,9 +65,8 @@ def getSR(symbol, roundQty):
     return support_level, resistance_level
 
 # Валидация клайна
-def klineValidation(symbol, side, markPrice, roundQty):
+def klineValidation(symbol, side, markPrice, roundQty, timeNow):
     print(f'Создание позиции для {symbol}{datetime.now()}')
-    timeNow = int(time.time())
     klines1MinTime = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
     klineCreateTime = int(klines1MinTime[0][:-3])
     
@@ -112,6 +111,32 @@ def klineValidation(symbol, side, markPrice, roundQty):
                     else:
                         print('сделка не валидна')
                         return None
+
+# Очистка ордеров
+def ordersClear():
+    n = 0
+    with open('orderId.txt', 'r', encoding='utf-8') as f:
+        orderId_copy = [f.read()]
+    while True:
+        try:
+            n += 1
+            print(f'Запрос номер: {n}')
+            orderId = session.get_closed_pnl(category='linear', page=1)
+            orderId = orderId['result']['list'][0]['orderId']
+            if len(session.get_positions(category='linear', settleCoin='USDT')['result']['list']) == 0:
+                if orderId != orderId_copy[0]:
+                    orderId_copy.clear()
+                    orderId_copy.append(orderId)
+                    with open('orderId.txt', 'w', encoding='utf-8') as f:
+                        f.write(orderId)
+                    pprint(session.cancel_all_orders(
+                        category="linear",
+                        settleCoin='USDT'
+                    ))
+            time.sleep(0.5)
+        except Exception as er:
+            with open('errorsOrdersClear.txt', 'a', encoding='utf-8') as f:
+                f.write(f"{datetime.now()} | {er}\n\n")
 
 # Публикация ордера
 def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
@@ -258,31 +283,5 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
         print(er, 'Place order')
         with open('errors.txt', 'a', encoding='utf-8') as f:
             f.write(f"{datetime.now()} | {er}\n\n")
-
-# Очистка ордеров
-def ordersClear():
-    n = 0
-    with open('orderId.txt', 'r', encoding='utf-8') as f:
-        orderId_copy = [f.read()]
-    while True:
-        try:
-            n += 1
-            print(f'Запрос номер: {n}')
-            orderId = session.get_closed_pnl(category='linear', page=1)
-            orderId = orderId['result']['list'][0]['orderId']
-            if len(session.get_positions(category='linear', settleCoin='USDT')['result']['list']) == 0:
-                if orderId != orderId_copy[0]:
-                    orderId_copy.clear()
-                    orderId_copy.append(orderId)
-                    with open('orderId.txt', 'w', encoding='utf-8') as f:
-                        f.write(orderId)
-                    pprint(session.cancel_all_orders(
-                        category="linear",
-                        settleCoin='USDT'
-                    ))
-            time.sleep(0.5)
-        except Exception as er:
-            with open('errorsOrdersClear.txt', 'a', encoding='utf-8') as f:
-                f.write(f"{datetime.now()} | {er}\n\n")
 
 

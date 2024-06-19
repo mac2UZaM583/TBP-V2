@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+import time
 from name import get_balance, get_tickers, find_tickerDone, place_order, get_last_price, get_roundQty, klineValidation, ordersClear
 from pprint import pprint
 import multiprocessing
@@ -28,6 +29,7 @@ def main():
                         response = requests.get(url, headers)
                     soup = BeautifulSoup(response.text, 'lxml')
                     data = soup.find_all('meta')
+                    timeNow = int(time.time())
                     # Принятие решения о стороне сделки
                     for content in data:
                         if '🔴' in str(content) or '🟢' in str(content):
@@ -44,11 +46,11 @@ def main():
 
                             if str(content).count('🔴') == 1:
                                 if tickerDone in tickers and balance_usdt != 0:
-                                    side = klineValidation(tickerDone, 'Buy', mark_price, roundQty)
+                                    side = klineValidation(tickerDone, 'Buy', mark_price, roundQty, timeNow)
                                     place_order(tickerDone, side, mark_price, roundQty, balanceWL, tp, sl)
                             if str(content).count('🟢') == 1:
                                 if tickerDone in tickers and balance_usdt != 0:
-                                    side = klineValidation(tickerDone, 'Sell', mark_price, roundQty)
+                                    side = klineValidation(tickerDone, 'Sell', mark_price, roundQty, timeNow)
                                     place_order(tickerDone, side, mark_price, roundQty, balanceWL, tp, sl)
                             
                             # Сохранение значений в текстовой файл
