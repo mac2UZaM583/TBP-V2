@@ -7,7 +7,7 @@ import time
 from pprint import pprint
 
 session = HTTP(
-    # demo=True,
+    demo=True,
     api_key=api_key,
     api_secret=api_secret
 )
@@ -18,14 +18,12 @@ def get_balance():
     balance = response['result']['list'][0]['coin'][0]['walletBalance']
     return balance
 
-# Получение тикеров
-def get_tickers():
-    minOrderQty = session.get_tickers(category='linear')['result']['list']
-    tickers = [ticker['symbol'] for ticker in minOrderQty if 'USDT' in ticker['symbol'] and not 'USDC' in ticker['symbol']]
-    return tickers
-
-# Получение точного тикера если он не подходит
-def find_tickerDone(ticker, tickers):
+# Получение тикера
+def get_ticker(content):
+    elements = str(content).split()
+    ticker = str(elements[1][11:-1] + 'USDT')
+    tickersNoneValidate = session.get_tickers(category='linear')['result']['list']
+    tickers = [ticker['symbol'] for ticker in tickersNoneValidate if 'USDT' in ticker['symbol'] and not 'USDC' in ticker['symbol']]
     if ticker not in tickers:
         for t in tickers:
             if ticker in t:
@@ -34,7 +32,7 @@ def find_tickerDone(ticker, tickers):
                     return prefix + ticker
     else:
         return ticker
-
+    
 # Получение информации о текущей последней цене
 def get_last_price(symbol):
     response = session.get_tickers(category='linear', symbol=symbol)
@@ -66,7 +64,7 @@ def getSR(symbol, roundQty):
 
 # Валидация клайна
 def klineValidation(symbol, side, markPrice, roundQty, timeNow):
-    print(f'Создание позиции для {symbol}{datetime.now()}')
+    print(f'Создание позиции для {symbol} ')
     klines1MinTime = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
     klineCreateTime = int(klines1MinTime[0][:-3])
     
@@ -136,13 +134,12 @@ def ordersClear():
             time.sleep(0.5)
         except Exception as er:
             with open('errorsOrdersClear.txt', 'a', encoding='utf-8') as f:
-                f.write(f"{datetime.now()} | {er}\n\n")
+                f.write(f'{datetime.now()} |{er}\n\n')
 
 # Публикация ордера
 def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
     try:
         if len(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list']) == 0:
-            print('ордер прошел проверку')
             qty = round(balanceWL / mark_price, roundQty[1])
             if side == 'Sell':
                 tp_priceL = round((1 - tp) * mark_price, roundQty[0])
@@ -282,6 +279,6 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
     except Exception as er:
         print(er, 'Place order')
         with open('errors.txt', 'a', encoding='utf-8') as f:
-            f.write(f"{datetime.now()} | {er}\n\n")
+            f.write(f'{datetime.now()} | {er}\n\n')
 
 
