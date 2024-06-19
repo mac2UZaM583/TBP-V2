@@ -21,17 +21,17 @@ def get_balance():
 # Получение тикера
 def get_ticker(content):
     elements = str(content).split()
-    ticker = str(elements[1][11:-1] + 'USDT')
+    tickerNoneValidate = str(elements[1][11:-1] + 'USDT')
     tickersNoneValidate = session.get_tickers(category='linear')['result']['list']
     tickers = [ticker['symbol'] for ticker in tickersNoneValidate if 'USDT' in ticker['symbol'] and not 'USDC' in ticker['symbol']]
-    if ticker not in tickers:
+    if tickerNoneValidate not in tickers:
         for t in tickers:
-            if ticker in t:
-                prefix = t.split(ticker)[0]
+            if tickerNoneValidate in t:
+                prefix = t.split(tickerNoneValidate)[0]
                 if prefix.isdigit() and '0' in prefix:
-                    return prefix + ticker
+                    return prefix + tickerNoneValidate
     else:
-        return ticker
+        return tickerNoneValidate
     
 # Получение информации о текущей последней цене
 def get_last_price(symbol):
