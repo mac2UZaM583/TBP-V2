@@ -7,7 +7,7 @@ import time
 from pprint import pprint
 
 session = HTTP(
-    demo=True,
+    # demo=True,
     api_key=api_key,
     api_secret=api_secret
 )

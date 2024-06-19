@@ -3,7 +3,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-async def fetch(session, url, headers):
+async def getHTML(session, url, headers):
     while True:
         try:
             async with session.get(url, headers=headers) as response:
@@ -12,13 +12,13 @@ async def fetch(session, url, headers):
             print(f'Ошибка: {er} Время: {datetime.now()}')
             await asyncio.sleep(1)  # Добавляем задержку перед повторной попыткой
 
-async def getHTML(url, headers):
+async def validationCode(url, headers):
     async with aiohttp.ClientSession() as session:
         i = 0
         run = True
         while run:
             i += 1
-            html = await fetch(session, url, headers)
+            html = await getHTML(session, url, headers)
             soup = BeautifulSoup(html, 'lxml')
             data = soup.find_all('meta')
             print(f'Поиск контента {i}')
@@ -29,6 +29,6 @@ async def getHTML(url, headers):
     
 def prsrpp(url, headers):
     loop = asyncio.get_event_loop()
-    content = loop.run_until_complete(getHTML(url, headers))
+    content = loop.run_until_complete(validationCode(url, headers))
     return content
         
