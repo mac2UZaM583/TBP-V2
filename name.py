@@ -29,9 +29,9 @@ def get_ticker(content):
             if tickerNoneValidate in t:
                 prefix = t.split(tickerNoneValidate)[0]
                 if prefix.isdigit() and '0' in prefix:
-                    return prefix + tickerNoneValidate
+                    return prefix + tickerNoneValidate, tickers
     else:
-        return tickerNoneValidate
+        return tickerNoneValidate, tickers
     
 # Получение информации о текущей последней цене
 def get_last_price(symbol):
