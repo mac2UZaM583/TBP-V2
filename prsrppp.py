@@ -12,7 +12,7 @@ async def getHTML(session, url, headers):
             print(f'Ошибка: {er} Время: {datetime.now()}')
             await asyncio.sleep(1)  # Добавляем задержку перед повторной попыткой
 
-async def validationCode(url, headers):
+async def validationCode(url, headers, url_count=None):
     async with aiohttp.ClientSession() as session:
         i = 0
         run = True
@@ -21,14 +21,14 @@ async def validationCode(url, headers):
             html = await getHTML(session, url, headers)
             soup = BeautifulSoup(html, 'lxml')
             data = soup.find_all('meta')
-            print(f'Поиск контента {i}')
+            print(f'Поиск контента. Попытка - {i}. Url count - {url_count}')
             for content in data:
                 if '🔴' in str(content) or '🟢' in str(content):
                     run = False
                     return content
     
-def prsrpp(url, headers):
+def prsrpp(url, headers, url_count=None):
     loop = asyncio.get_event_loop()
-    content = loop.run_until_complete(validationCode(url, headers))
+    content = loop.run_until_complete(validationCode(url, headers, url_count=url_count))
     return content
         

@@ -118,7 +118,7 @@ def ordersClear():
     while True:
         try:
             n += 1
-            print(f'Запрос номер: {n}')
+            print(f'Очистка ордеров. Запрос номер - {n}')
             orderId = session.get_closed_pnl(category='linear', page=1)
             orderId = orderId['result']['list'][0]['orderId']
             if len(session.get_positions(category='linear', settleCoin='USDT')['result']['list']) == 0:

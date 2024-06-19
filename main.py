@@ -16,7 +16,7 @@ def main():
         try:
             timeNow = int(time.time())
             url = f'https://t.me/pump_dump_screener_demo/{url_count}'
-            content = prsrpp(url, headers)
+            content = prsrpp(url, headers, url_count=url_count)
             url_count += 1
                     
             ticker = get_ticker(content)
