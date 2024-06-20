@@ -13,10 +13,10 @@ def main():
         try:
             while True:
                 try:
-                    timeNow = int(time.time())
-                    print(f'\n\nstart/time {timeNow}\n\n')
+                    print(f'\n\nstart/time - плдюююююю\n\n')
                     
                     signal = smq()
+                    timeNow = int(time.time())
                     balance_usdt = get_balance()
                     balanceWL = float(balance_usdt)
                     mark_price = get_last_price(signal[0])
