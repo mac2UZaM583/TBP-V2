@@ -22,7 +22,7 @@ def scrcr1(queue):
         data_new = session.get_tickers(category='linear')['result']['list']
         for priceOld, priceNew in zip(data_old, data_new):
             percent_change = round(((Decimal(priceNew['lastPrice']) - Decimal(priceOld['lastPrice'])) / Decimal(priceOld['lastPrice'])) * 100, 2)
-            if percent_change >= THRESHOLD_PERCENT:
+            if abs(percent_change) >= THRESHOLD_PERCENT:
                 queue.put((priceNew['symbol'], percent_change))
 
 def scrcr2(queue):
@@ -37,7 +37,7 @@ def scrcr2(queue):
         data_new = session.get_tickers(category='linear')['result']['list']
         for priceOld, priceNew in zip(data_old, data_new):
             percent_change = round(((Decimal(priceNew['lastPrice']) - Decimal(priceOld['lastPrice'])) / Decimal(priceOld['lastPrice'])) * 100, 2)
-            if percent_change >= THRESHOLD_PERCENT:
+            if abs(percent_change) >= THRESHOLD_PERCENT:
                 queue.put((priceNew['symbol'], percent_change))
 
 def scrcr3(queue):
@@ -52,7 +52,7 @@ def scrcr3(queue):
         data_new = session.get_tickers(category='linear')['result']['list']
         for priceOld, priceNew in zip(data_old, data_new):
             percent_change = round(((Decimal(priceNew['lastPrice']) - Decimal(priceOld['lastPrice'])) / Decimal(priceOld['lastPrice'])) * 100, 2)
-            if percent_change >= THRESHOLD_PERCENT:
+            if abs(percent_change) >= THRESHOLD_PERCENT:
                 queue.put((priceNew['symbol'], percent_change))
             
 def smq():
