@@ -111,7 +111,7 @@ def klineValidation(symbol, side, markPrice, roundQty, timeNow):
     else:
         with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'a', encoding='utf-8') as f:
             f.write(f'BMQ: Ордер не прошел проверку.\n'
-                    f'Время - {datetime.now()}\n'
+                    f'Время - {time.time()}\n'
                     f'Время записи - {timeNow}\n'
                     f'Klines: {klines}')
 
