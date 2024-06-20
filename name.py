@@ -17,21 +17,6 @@ def get_balance():
     response = session.get_wallet_balance(accountType='CONTRACT', coin='USDT')
     balance = response['result']['list'][0]['coin'][0]['walletBalance']
     return balance
-
-# Получение тикера
-def get_ticker(content):
-    elements = str(content).split()
-    tickerNoneValidate = str(elements[1][11:-1] + 'USDT')
-    tickersNoneValidate = session.get_tickers(category='linear')['result']['list']
-    tickers = [ticker['symbol'] for ticker in tickersNoneValidate if 'USDT' in ticker['symbol'] and not 'USDC' in ticker['symbol']]
-    if tickerNoneValidate not in tickers:
-        for t in tickers:
-            if tickerNoneValidate in t:
-                prefix = t.split(tickerNoneValidate)[0]
-                if prefix.isdigit() and '0' in prefix:
-                    return prefix + tickerNoneValidate, tickers
-    else:
-        return tickerNoneValidate, tickers
     
 # Получение информации о текущей последней цене
 def get_last_price(symbol):
@@ -70,7 +55,6 @@ def getSR(symbol, roundQty):
 
 # Валидация клайна
 def klineValidation(symbol, side, markPrice, roundQty, timeNow):
-    print(f'Создание позиции для {symbol} ')
     klines1MinTime = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
     klineCreateTime = int(klines1MinTime[0][:-3])
     
@@ -115,6 +99,9 @@ def klineValidation(symbol, side, markPrice, roundQty, timeNow):
                     else:
                         print('сделка не валидна')
                         return None
+    else:
+        with open('errors kline_validation.txt', 'a', encoding='utf-8') as f:
+            f.write(f'клайн не прошел проверку временем - {datetime.now()}')
 
 # Очистка ордеров
 def ordersClear():
@@ -169,7 +156,7 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                     sellLeverage="10",
                 ))
             except Exception as er:
-                print(f'не удалось сменить режим сделки потому что и так все хорошо \n\n {er}')
+                print(f'{er}это значит что не удалось сменить режим сделки потому что и так все хорошо \n\n\n')
             resp = session.place_order(
                 category='linear',
                 symbol=symbol,
@@ -237,7 +224,7 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
             )
-            print('первый лимитный ордер установлен')
+            print('\n\n\nпервый лимитный ордер установлен\n\n\n')
             resp3 = session.place_order(
                 category='linear',
                 symbol=symbol,
@@ -251,7 +238,7 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
             )
-            print('второй лимитный ордер установлен')
+            print('второй лимитный ордер установлен\n\n\n')
             resp4 = session.place_order(
                 category='linear',
                 symbol=symbol,
@@ -265,7 +252,7 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
             )
-            print('третий лимитный ордер установлен')
+            print('третий лимитный ордер установлен\n\n\n')
             resp5 = session.place_order(
                 category='linear',
                 symbol=symbol,
@@ -280,11 +267,11 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
             )
-            print('четвертый лимитный ордер установлен')
+            print('четвертый лимитный ордер установлен\n\n\n')
             print(f'{resp2}\n\n{resp3}\n\n{resp4}\n\n{resp5}\n\n')
     except Exception as er:
         print(er, 'Place order')
         with open('errors.txt', 'a', encoding='utf-8') as f:
-            f.write(f'{datetime.now()} | {er}\n\n')
+            f.write(f'в этой ошибке наверно написано что то типо \'cannot access local variable \'tp_priceL\'\'\n\n{er}')
 
 
