@@ -27,7 +27,7 @@ def scrcr1(queue):
 
 def scrcr2(queue):
     while True:
-        print('я бог криптовалюты и я анализирую рынок. попытка номер плю2')
+        print('я 2 бог криптовалюты и я анализирую рынок. попытка номер плю2')
         data_old = session.get_tickers(category='linear')['result']['list']
         pricesOld = []
         for price in data_old:
@@ -42,7 +42,7 @@ def scrcr2(queue):
 
 def scrcr3(queue):
     while True:
-        print('я второй бог криптовалюты и я анализирую рынок. попытка номер плю3')
+        print('я 3 бог криптовалюты и я анализирую рынок. попытка номер плю3')
         data_old = session.get_tickers(category='linear')['result']['list']
         pricesOld = []
         for price in data_old:
@@ -57,7 +57,7 @@ def scrcr3(queue):
 
 def scrcr4(queue):
     while True:
-        print('я третий бог криптовалюты и я анализирую рынок. попытка номер плю4')
+        print('я 4 бог криптовалюты и я анализирую рынок. попытка номер плю4')
         data_old = session.get_tickers(category='linear')['result']['list']
         pricesOld = []
         for price in data_old:
@@ -76,7 +76,6 @@ def smq():
     process2 = Process(target=scrcr2, args=(queue,))
     process3 = Process(target=scrcr3, args=(queue,))
     process4 = Process(target=scrcr4, args=(queue,))
-
     process1.start()
     process2.start()
     process3.start()
@@ -90,8 +89,7 @@ def smq():
                         f'Percent - {result[1]}%')
             if result[1] > 0:
                 f.write(f'🟢Ticker: {result[0]}\n'
-                        f'Percent - {result[1]}%')
-            
+                        f'Percent - {result[1]}%')  
         return result
 
     process1.join()

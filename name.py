@@ -63,7 +63,7 @@ def klineValidation(symbol, side, markPrice, roundQty, timeNow):
     if timeNow > klineCreateTime and klines > 240:
         run = True
         while run:
-            print(f'run #1')
+            print(f'Run #1')
             klines1MinTimeNext = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
             time.sleep(0.3)
             if klines1MinTime[0] != klines1MinTimeNext[0]:
@@ -71,13 +71,13 @@ def klineValidation(symbol, side, markPrice, roundQty, timeNow):
         # Проверка следущего клайна
         run = True
         while run:
-            print(f'run #2')
+            print(f'Run #2')
             klines1MinTimeNext1 = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
             time.sleep(0.3)
             if klines1MinTimeNext[0] != klines1MinTimeNext1[0]:
                 klines1MinTimeNext = session.get_kline(symbol=symbol, category='linear', interval='1', limit=2)['result']['list'][1]
                 run = False
-        print(f'run completed^ {run}')
+        print(f'Run completed^ {run}')
         
         # Определение валидности и выдача стороны сделки 
         SGlobal, RGlobal, SLocal, RLocal = getSR(symbol, roundQty)
@@ -123,7 +123,7 @@ def ordersClear():
     while True:
         try:
             n += 1
-            print(f'Очистка ордеров. Запрос номер - {n}')
+            print(f'Очистка ордеров. Запрос номер: {n}')
             orderId = session.get_closed_pnl(category='linear', page=1)
             orderId = orderId['result']['list'][0]['orderId']
             if len(session.get_positions(category='linear', settleCoin='USDT')['result']['list']) == 0:
@@ -152,13 +152,6 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                 tp_priceL = round((1 + tp) * mark_price, roundQty[0])
 
             # Выставление маркет ордера
-            print(
-                f'Placing {side} order for {symbol} \n'
-                f'TpPrice: {tp_priceL}\n'
-                f'Qty: {qty}\n' 
-                f'RoundQty: {roundQty}\n'
-                f'Time: {datetime.now()}'
-            )
             try:
                 pprint(session.switch_margin_mode(
                     category="linear",
@@ -168,7 +161,7 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                     sellLeverage="10",
                 ))
             except Exception as er:
-                print(f'{er}это значит что не удалось сменить режим сделки потому что и так все хорошо \n\n\n')
+                print(f'{er}\n Не удалось сменить режим торговли\n\n\n')
             resp = session.place_order(
                 category='linear',
                 symbol=symbol,
@@ -220,7 +213,7 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                     positionIdx=0
                 ))
             except:
-                print('тп не установлен потому что и так все хорошо')
+                print('Тейк профит не переустановлен')
 
             # Публикация лимитных ордеров
             resp2 = session.place_order(
@@ -236,7 +229,7 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
             )
-            print('\n\n\nпервый лимитный ордер установлен\n\n\n')
+            print('\n\n\n1 лимитный ордер установлен\n\n\n')
             resp3 = session.place_order(
                 category='linear',
                 symbol=symbol,
@@ -250,7 +243,7 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
             )
-            print('второй лимитный ордер установлен\n\n\n')
+            print('2 лимитный ордер установлен\n\n\n')
             resp4 = session.place_order(
                 category='linear',
                 symbol=symbol,
@@ -264,7 +257,7 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
             )
-            print('третий лимитный ордер установлен\n\n\n')
+            print('3 лимитный ордер установлен\n\n\n')
             resp5 = session.place_order(
                 category='linear',
                 symbol=symbol,
@@ -279,11 +272,10 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
             )
-            print('четвертый лимитный ордер установлен\n\n\n')
+            print('4 лимитный ордер установлен\n\n\n')
             print(f'{resp2}\n\n{resp3}\n\n{resp4}\n\n{resp5}\n\n')
     except Exception as er:
-        print(er, 'Place order')
         with open('errors', 'a', encoding='utf-8') as f:
-            f.write(f'ошибка в Place Order: \n\n{er}\n {datetime.now()}')
+            f.write(f'Ошибка в Place Order: \n\n{er}\n Время: {datetime.now()}')
 
 
