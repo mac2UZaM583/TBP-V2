@@ -11,6 +11,7 @@ def get_tickers():
 
 def smq():
     while True:
+        print('я бог криптовалюты и я анализирую рынок. попытка номер плю')
         data_old = session.get_tickers(category='linear')['result']['list']
         pricesOld = []
         for price in data_old:
