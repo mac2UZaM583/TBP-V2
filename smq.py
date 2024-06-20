@@ -3,7 +3,7 @@ import time
 from decimal import Decimal
 from multiprocessing import Process, Queue
 
-THRESHOLD_PERCENT = 3
+THRESHOLD_PERCENT = 2.5
 session = HTTP()
 
 def get_tickers():
