@@ -6,10 +6,6 @@ from multiprocessing import Process, Queue
 THRESHOLD_PERCENT = 3
 session = HTTP()
 
-def get_tickers():
-    info = session.get_tickers(category='linear')['result']['list']
-    return [ticker['symbol'] for ticker in info if 'USDC' not in ticker['symbol'] and 'USDT' in ticker['symbol']]
-
 def scrcr1(queue):
     while True:
         print('я бог криптовалюты и я анализирую рынок. попытка номер плю1')
