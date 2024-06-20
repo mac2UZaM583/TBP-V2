@@ -55,11 +55,12 @@ def getSR(symbol, roundQty):
 
 # Валидация клайна
 def klineValidation(symbol, side, markPrice, roundQty, timeNow):
+    klines = len(session.get_kline(symbol=symbol, category='linear', interval='60', limit=240)['result']['list'])
     klines1MinTime = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
     klineCreateTime = int(klines1MinTime[0][:-3])
     
     # Проверка ведущего клайна
-    if timeNow > klineCreateTime:
+    if timeNow > klineCreateTime and klines > 240:
         run = True
         while run:
             print(f'run #1')
@@ -89,7 +90,11 @@ def klineValidation(symbol, side, markPrice, roundQty, timeNow):
                     if markPriceS > SGlobal or markPriceS > SLocal:
                         return side
                     else:
-                        print('сделка не валидна')
+                        with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                            f.write(f'BMQ: Ордер не прошел проверку.\n'
+                                    f'SGlobal: {SGlobal}, SLocal: {SLocal}\n'
+                                    f'MarkPriceS: {markPriceS}, MarkPrice: {markPrice}\n'
+                                    f'Время - {datetime.now()}')
                         return None
         elif side == 'Buy':
             if Decimal(klines1MinTimeNext[1]) < Decimal(klines1MinTimeNext[4]):
@@ -97,11 +102,18 @@ def klineValidation(symbol, side, markPrice, roundQty, timeNow):
                     if markPriceR < RGlobal or markPriceR < RLocal:
                         return side
                     else:
-                        print('сделка не валидна')
+                        with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                            f.write(f'BMQ: Ордер не прошел проверку.\n'
+                                    f'RGlobal: {RGlobal}, RLocal: {RLocal}\n'
+                                    f'MarkPriceR: {markPriceR}, MarkPrice: {markPrice}\n'
+                                    f'Время - {datetime.now()}')
                         return None
     else:
-        with open('errors kline_validation.txt', 'a', encoding='utf-8') as f:
-            f.write(f'клайн не прошел проверку временем - {datetime.now()}')
+        with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'a', encoding='utf-8') as f:
+            f.write(f'BMQ: Ордер не прошел проверку.\n'
+                    f'Время - {datetime.now()}\n'
+                    f'Время записи - {timeNow}\n'
+                    f'Klines: {klines}')
 
 # Очистка ордеров
 def ordersClear():
@@ -271,7 +283,7 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
             print(f'{resp2}\n\n{resp3}\n\n{resp4}\n\n{resp5}\n\n')
     except Exception as er:
         print(er, 'Place order')
-        with open('errors.txt', 'a', encoding='utf-8') as f:
-            f.write(f'в этой ошибке наверно написано что то типо \'cannot access local variable \'tp_priceL\'\'\n\n{er} {datetime.now()}')
+        with open('errors', 'a', encoding='utf-8') as f:
+            f.write(f'ошибка в Place Order: \n\n{er}\n {datetime.now()}')
 
 

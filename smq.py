@@ -3,7 +3,7 @@ import time
 from decimal import Decimal
 from multiprocessing import Process, Queue
 
-THRESHOLD_PERCENT = 2.5
+THRESHOLD_PERCENT = 3
 session = HTTP()
 
 def get_tickers():
@@ -17,7 +17,7 @@ def scrcr1(queue):
         pricesOld = []
         for price in data_old:
             pricesOld.append(Decimal(price['lastPrice']))
-        time.sleep(20)
+        time.sleep(40)
 
         data_new = session.get_tickers(category='linear')['result']['list']
         for priceOld, priceNew in zip(data_old, data_new):
@@ -27,7 +27,22 @@ def scrcr1(queue):
 
 def scrcr2(queue):
     while True:
-        print('я второй бог криптовалюты и я анализирую рынок. попытка номер плю2')
+        print('я бог криптовалюты и я анализирую рынок. попытка номер плю2')
+        data_old = session.get_tickers(category='linear')['result']['list']
+        pricesOld = []
+        for price in data_old:
+            pricesOld.append(Decimal(price['lastPrice']))
+        time.sleep(20)
+
+        data_new = session.get_tickers(category='linear')['result']['list']
+        for priceOld, priceNew in zip(data_old, data_new):
+            percent_change = round(((Decimal(priceNew['lastPrice']) - Decimal(priceOld['lastPrice'])) / Decimal(priceOld['lastPrice'])) * 100, 2)
+            if abs(percent_change) >= THRESHOLD_PERCENT:
+                queue.put((priceNew['symbol'], percent_change))
+
+def scrcr3(queue):
+    while True:
+        print('я второй бог криптовалюты и я анализирую рынок. попытка номер плю3')
         data_old = session.get_tickers(category='linear')['result']['list']
         pricesOld = []
         for price in data_old:
@@ -40,9 +55,9 @@ def scrcr2(queue):
             if abs(percent_change) >= THRESHOLD_PERCENT:
                 queue.put((priceNew['symbol'], percent_change))
 
-def scrcr3(queue):
+def scrcr4(queue):
     while True:
-        print('я третий бог криптовалюты и я анализирую рынок. попытка номер плю3')
+        print('я третий бог криптовалюты и я анализирую рынок. попытка номер плю4')
         data_old = session.get_tickers(category='linear')['result']['list']
         pricesOld = []
         for price in data_old:
@@ -60,10 +75,12 @@ def smq():
     process1 = Process(target=scrcr1, args=(queue,))
     process2 = Process(target=scrcr2, args=(queue,))
     process3 = Process(target=scrcr3, args=(queue,))
+    process4 = Process(target=scrcr4, args=(queue,))
 
     process1.start()
     process2.start()
     process3.start()
+    process4.start()
 
     result = queue.get()
     if result is not None:
@@ -80,6 +97,7 @@ def smq():
     process1.join()
     process2.join()
     process3.join()
+    process4.join()
 
 # if __name__ == '__main__':
 #     while True:
