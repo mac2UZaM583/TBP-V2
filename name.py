@@ -7,14 +7,14 @@ import time
 from pprint import pprint
 
 session = HTTP(
-    # demo=True,
+    demo=True,
     api_key=api_key,
     api_secret=api_secret
 )
 
 # Получение баланса
 def get_balance():
-    response = session.get_wallet_balance(accountType='CONTRACT', coin='USDT')
+    response = session.get_wallet_balance(accountType='UNIFIED', coin='USDT')
     balance = response['result']['list'][0]['coin'][0]['walletBalance']
     return balance
     
@@ -124,7 +124,7 @@ def ordersClear():
                         category="linear",
                         settleCoin='USDT'
                     ))
-            time.sleep(0.5)
+            time.sleep(3)
         except Exception as er:
             with open('errorsOrdersClear.txt', 'a', encoding='utf-8') as f:
                 f.write(f'{datetime.now()} |{er}\n\n')
@@ -272,6 +272,6 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
     except Exception as er:
         print(er, 'Place order')
         with open('errors.txt', 'a', encoding='utf-8') as f:
-            f.write(f'в этой ошибке наверно написано что то типо \'cannot access local variable \'tp_priceL\'\'\n\n{er}')
+            f.write(f'в этой ошибке наверно написано что то типо \'cannot access local variable \'tp_priceL\'\'\n\n{er} {datetime.now()}')
 
 
