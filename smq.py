@@ -17,7 +17,7 @@ def scrcr1(queue):
         pricesOld = []
         for price in data_old:
             pricesOld.append(Decimal(price['lastPrice']))
-        time.sleep(40)
+        time.sleep(60)
 
         data_new = session.get_tickers(category='linear')['result']['list']
         for priceOld, priceNew in zip(data_old, data_new):
