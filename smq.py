@@ -32,7 +32,7 @@ def scrcr2(queue):
         pricesOld = []
         for price in data_old:
             pricesOld.append(Decimal(price['lastPrice']))
-        time.sleep(20)
+        time.sleep(30)
 
         data_new = session.get_tickers(category='linear')['result']['list']
         for priceOld, priceNew in zip(data_old, data_new):
@@ -47,7 +47,7 @@ def scrcr3(queue):
         pricesOld = []
         for price in data_old:
             pricesOld.append(Decimal(price['lastPrice']))
-        time.sleep(5)
+        time.sleep(10)
 
         data_new = session.get_tickers(category='linear')['result']['list']
         for priceOld, priceNew in zip(data_old, data_new):
@@ -62,7 +62,7 @@ def scrcr4(queue):
         pricesOld = []
         for price in data_old:
             pricesOld.append(Decimal(price['lastPrice']))
-        time.sleep(2)
+        time.sleep(5)
 
         data_new = session.get_tickers(category='linear')['result']['list']
         for priceOld, priceNew in zip(data_old, data_new):
