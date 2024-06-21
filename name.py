@@ -53,7 +53,7 @@ def getSR(symbol, roundQty):
     return support_levelGlobal, resistance_levelGlobal, support_levelLocal, resistance_levelLocal
 
 # Валидация клайна
-def klineValidation(symbol, side, markPrice, roundQty, timeNow):
+def klineValidation(symbol, side, roundQty, timeNow):
     klines = len(session.get_kline(symbol=symbol, category='linear', interval='60', limit=240)['result']['list'])
     klines1MinTime = session.get_kline(symbol=symbol, category='linear', interval='1', limit=1)['result']['list'][0]
     klineCreateTime = int(klines1MinTime[0][:-3])
@@ -80,6 +80,7 @@ def klineValidation(symbol, side, markPrice, roundQty, timeNow):
         
         # Определение валидности и выдача стороны сделки 
         SGlobal, RGlobal, SLocal, RLocal = getSR(symbol, roundQty)
+        markPrice = get_last_price(symbol)
         markPriceS = markPrice - ((markPrice / 100) * 1.5)
         markPriceR = markPrice + ((markPrice / 100) * 1.5)
         klineRadius = D(klines1MinTimeNext[2]) - D(klines1MinTimeNext[3])
@@ -144,9 +145,10 @@ def ordersClear():
                 f.write(f'{datetime.now()} |{er}\n\n')
 
 # Публикация ордера
-def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
+def place_order(symbol, side, roundQty, balanceWL, tp, sl):
     try:
         if len(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list']) == 0:
+            mark_price = get_last_price(symbol)
             qty = round(balanceWL / mark_price, roundQty[1])
             if side == 'Sell':
                 tp_priceL = round((1 - tp) * mark_price, roundQty[0])

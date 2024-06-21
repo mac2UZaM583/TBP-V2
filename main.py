@@ -1,5 +1,5 @@
 from smq import smq
-from name import get_balance, place_order, get_last_price, get_roundQty, klineValidation, ordersClear
+from name import get_balance, place_order, get_roundQty, klineValidation, ordersClear
 from pprint import pprint
 import time
 from multiprocessing import Process
@@ -19,16 +19,15 @@ def main():
                     timeNow = int(time.time())
                     balance_usdt = get_balance()
                     balanceWL = float(balance_usdt)
-                    mark_price = get_last_price(signal[0])
                     roundQty =  get_roundQty(signal[0])
                     if signal[1] < 0:
-                        side = klineValidation(signal[0], 'Buy', mark_price, roundQty, timeNow)
+                        side = klineValidation(signal[0], 'Buy', roundQty, timeNow)
                         if side != None:
-                            place_order(signal[0], side, mark_price, roundQty, balanceWL, tp, sl)
+                            place_order(signal[0], side, roundQty, balanceWL, tp, sl)
                     if signal[1] > 0:
-                        side = klineValidation(signal[0], 'Sell', mark_price, roundQty, timeNow)
+                        side = klineValidation(signal[0], 'Sell', roundQty, timeNow)
                         if side != None:
-                            place_order(signal[0], side, mark_price, roundQty, balanceWL, tp, sl)
+                            place_order(signal[0], side, roundQty, balanceWL, tp, sl)
                     break
                 except Exception as er:
                     pprint(er)
