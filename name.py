@@ -86,7 +86,7 @@ def klineValidation(symbol, side, roundQty, timeNow):
         klineRadius = D(klines1MinTimeNext[2]) - D(klines1MinTimeNext[3])
         CloseOpenRadius = D(klines1MinTimeNext[4]) - D(klines1MinTimeNext[3])
         if side == 'Sell':
-            ThresholdRadiusSell = klineRadius - (klineRadius * D(60 / 100))
+            ThresholdRadiusSell = round(klineRadius - (klineRadius * D(60 / 100)), roundQty[0])
             if (D(klines1MinTimeNext[1]) > D(klines1MinTimeNext[4])) and (CloseOpenRadius < ThresholdRadiusSell) and (markPriceS > SGlobal or markPriceS > SLocal):
                 return side
             else:
@@ -99,7 +99,7 @@ def klineValidation(symbol, side, roundQty, timeNow):
                             f'Время - {datetime.now()}')
                 return None
         elif side == 'Buy':
-            ThresholdRadiusBuy = klineRadius - (klineRadius * D(40 / 100))
+            ThresholdRadiusBuy = round(klineRadius - (klineRadius * D(40 / 100)), roundQty[0])
             if (D(klines1MinTimeNext[1]) < D(klines1MinTimeNext[4])) and (CloseOpenRadius > ThresholdRadiusBuy) and (markPriceR < RGlobal or markPriceR < RLocal):
                 return side
             else:
