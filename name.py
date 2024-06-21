@@ -26,12 +26,11 @@ def get_last_price(symbol):
 
 # Получение информации о лотсайзфильтре ордера
 def get_roundQty(symbol):
-    mark_price = get_last_price(symbol)
-    data_minroundQty = session.get_instruments_info(category='linear', symbol=symbol)
-    data_minroundQty_2 = data_minroundQty['result']['list'][0]['lotSizeFilter']['minOrderQty']
-    roundQty_forTPSL = len(str(mark_price).split('.')[-1]) if '.' in str(data_minroundQty) else 0
-    roundQty_forOrder = len(str(data_minroundQty_2).split('.')[-1]) if '.' in str(data_minroundQty_2) else 0
-    return roundQty_forTPSL, roundQty_forOrder
+    data_minroundQty = session.get_instruments_info(category='linear', symbol=symbol)['result']['list'][0]['lotSizeFilter']['minOrderQty']
+    data_minroundPrice = session.get_instruments_info(category='linear', symbol=symbol)['result']['list'][0]['priceFilter']['minPrice']
+    roundForQty = len(data_minroundQty) if D(data_minroundQty) < 1 else 0
+    roundForTPSL = (len(data_minroundPrice) - 2) if D(data_minroundPrice) < 1 else len(data_minroundPrice)
+    return roundForTPSL, roundForQty
 
 # Получение уровня поддержки и сопротивления
 def getSR(symbol, roundQty):
