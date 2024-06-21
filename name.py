@@ -60,7 +60,7 @@ def klineValidation(symbol, side, markPrice, roundQty, timeNow):
     klineCreateTime = int(klines1MinTime[0][:-3])
     
     # Проверка ведущего клайна
-    if timeNow > klineCreateTime and klines > 240:
+    if timeNow > klineCreateTime and klines >= 240:
         run = True
         while run:
             print(f'Run #1')
@@ -109,9 +109,9 @@ def klineValidation(symbol, side, markPrice, roundQty, timeNow):
                                     f'Время - {datetime.now()}')
                         return None
     else:
-        with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'a', encoding='utf-8') as f:
+        with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
             f.write(f'BMQ: Ордер не прошел проверку.\n'
-                    f'Время - {time.time()}\n'
+                    f'Время клайна - {klineCreateTime}\n'
                     f'Время записи - {timeNow}\n'
                     f'Klines: {klines}')
 
@@ -275,7 +275,7 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
             print('4 лимитный ордер установлен\n\n\n')
             print(f'{resp2}\n\n{resp3}\n\n{resp4}\n\n{resp5}\n\n')
     except Exception as er:
-        with open('errors', 'a', encoding='utf-8') as f:
-            f.write(f'Ошибка в Place Order: \n\n{er}\n Время: {datetime.now()}')
+        with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+            f.write(f'Ошибка в Place Order: \n{er}\n Время: {datetime.now()}')
 
 
