@@ -17,17 +17,11 @@ def fetch_data(dataQueue):
 def process_data(dataQueue, result_queue):
     while True:
         data_old = dataQueue.get()
-        intervals = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        interval = 1
         prices_old = {price['symbol']: Decimal(price['lastPrice']) for price in data_old}
-        while len(intervals) > 0:
-            time.sleep(intervals[0])
-            print(len(intervals), datetime.now())
-            intervals.pop(0)
+        while True:
+            time.sleep(interval)
+            print(f'Check data. Time: {datetime.now()}')
             
             data_new = session.get_tickers(category='linear')['result']['list']
             for price_new in data_new:
