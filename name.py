@@ -28,7 +28,7 @@ def get_last_price(symbol):
 def get_roundQty(symbol):
     data_minroundQty = session.get_instruments_info(category='linear', symbol=symbol)['result']['list'][0]['lotSizeFilter']['minOrderQty']
     data_minroundPrice = session.get_instruments_info(category='linear', symbol=symbol)['result']['list'][0]['priceFilter']['minPrice']
-    roundForQty = len(data_minroundQty) if D(data_minroundQty) < 1 else 0
+    roundForQty = (len(data_minroundQty) - 2) if D(data_minroundQty) < 1 else 0
     roundForTPSL = (len(data_minroundPrice) - 2) if D(data_minroundPrice) < 1 else len(data_minroundPrice)
     return roundForTPSL, roundForQty
 
@@ -81,8 +81,8 @@ def klineValidation(symbol, side, roundQty, timeNow):
         # Определение валидности и выдача стороны сделки 
         SGlobal, RGlobal, SLocal, RLocal = getSR(symbol, roundQty)
         markPrice = get_last_price(symbol)
-        markPriceS = markPrice - ((markPrice / 100) * 1.5)
-        markPriceR = markPrice + ((markPrice / 100) * 1.5)
+        markPriceS = round(markPrice - ((markPrice / 100) * 1.5), roundQty[0])
+        markPriceR = round(markPrice + ((markPrice / 100) * 1.5), roundQty[0])
         klineRadius = D(klines1MinTimeNext[2]) - D(klines1MinTimeNext[3])
         CloseOpenRadius = D(klines1MinTimeNext[4]) - D(klines1MinTimeNext[3])
         if side == 'Sell':
@@ -220,7 +220,8 @@ def place_order(symbol, side, roundQty, balanceWL, tp, sl):
                 print('Тейк профит не переустановлен')
 
             # Публикация лимитных ордеров
-            resp2 = session.place_order(
+            try:
+                resp2 = session.place_order(
                 category='linear',
                 symbol=symbol,
                 qty=qty,
@@ -233,51 +234,65 @@ def place_order(symbol, side, roundQty, balanceWL, tp, sl):
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
             )
-            print('\n\n\n1 лимитный ордер установлен\n\n\n')
-            resp3 = session.place_order(
-                category='linear',
-                symbol=symbol,
-                qty=qty,
-                marketUnit='baseCoin',
-                side=side,
-                orderType='Limit',
-                price=str(entryPrice3),
-                takeProfit=tp_priceL3,
-                isLeverage=10,
-                tpTriggerBy='LastPrice',
-                slTriggerBy='LastPrice'
-            )
-            print('2 лимитный ордер установлен\n\n\n')
-            resp4 = session.place_order(
-                category='linear',
-                symbol=symbol,
-                qty=qty,
-                marketUnit='baseCoin',
-                side=side,
-                orderType='Limit',
-                price=str(entryPrice4),
-                takeProfit=tp_priceL4,
-                isLeverage=10,
-                tpTriggerBy='LastPrice',
-                slTriggerBy='LastPrice'
-            )
-            print('3 лимитный ордер установлен\n\n\n')
-            resp5 = session.place_order(
-                category='linear',
-                symbol=symbol,
-                qty=qty,
-                marketUnit='baseCoin',
-                side=side,
-                orderType='Limit',
-                price=str(entryPrice5),
-                takeProfit=tp_priceL5,
-                stopLoss=sl_price,
-                isLeverage=10,
-                tpTriggerBy='LastPrice',
-                slTriggerBy='LastPrice'
-            )
-            print('4 лимитный ордер установлен\n\n\n')
-            print(f'{resp2}\n\n{resp3}\n\n{resp4}\n\n{resp5}\n\n')
+                print('\n\n\n1 лимитный ордер установлен\n\n\n')
+            except:
+                with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                    f.write(f'Ошибка в выставлении 1 лимитного ордера: \n{er}\n Время: {datetime.now()}')
+            try:
+                resp3 = session.place_order(
+                    category='linear',
+                    symbol=symbol,
+                    qty=qty,
+                    marketUnit='baseCoin',
+                    side=side,
+                    orderType='Limit',
+                    price=str(entryPrice3),
+                    takeProfit=tp_priceL3,
+                    isLeverage=10,
+                    tpTriggerBy='LastPrice',
+                    slTriggerBy='LastPrice'
+                )
+                print('2 лимитный ордер установлен\n\n\n')
+            except:
+                with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                    f.write(f'Ошибка в выставлении 2 лимитного ордера: \n{er}\n Время: {datetime.now()}')
+            try:
+                resp4 = session.place_order(
+                    category='linear',
+                    symbol=symbol,
+                    qty=qty,
+                    marketUnit='baseCoin',
+                    side=side,
+                    orderType='Limit',
+                    price=str(entryPrice4),
+                    takeProfit=tp_priceL4,
+                    isLeverage=10,
+                    tpTriggerBy='LastPrice',
+                    slTriggerBy='LastPrice'
+                )
+                print('3 лимитный ордер установлен\n\n\n')
+            except:
+                with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                    f.write(f'Ошибка в выставлении 3 лимитного ордера: \n{er}\n Время: {datetime.now()}')
+            try:
+                resp5 = session.place_order(
+                    category='linear',
+                    symbol=symbol,
+                    qty=qty,
+                    marketUnit='baseCoin',
+                    side=side,
+                    orderType='Limit',
+                    price=str(entryPrice5),
+                    takeProfit=tp_priceL5,
+                    stopLoss=sl_price,
+                    isLeverage=10,
+                    tpTriggerBy='LastPrice',
+                    slTriggerBy='LastPrice'
+                )
+                print('4 лимитный ордер установлен\n\n\n')
+            except:
+                with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                    f.write(f'Ошибка в выставлении 4 лимитного ордера: \n{er}\n Время: {datetime.now()}')
     except Exception as er:
         with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
             f.write(f'Ошибка в Place Order: \n{er}\n Время: {datetime.now()}')
