@@ -1,7 +1,7 @@
 from keys import api_key, api_secret
 from pybit.unified_trading import HTTP
 import numpy as np
-from decimal import Decimal
+from decimal import Decimal as D
 from datetime import datetime
 import time
 from pprint import pprint
@@ -83,25 +83,32 @@ def klineValidation(symbol, side, markPrice, roundQty, timeNow):
         SGlobal, RGlobal, SLocal, RLocal = getSR(symbol, roundQty)
         markPriceS = markPrice - ((markPrice / 100) * 1.5)
         markPriceR = markPrice + ((markPrice / 100) * 1.5)
-        klineRadius = Decimal(klines1MinTimeNext[2]) - Decimal(klines1MinTimeNext[3])
+        klineRadius = D(klines1MinTimeNext[2]) - D(klines1MinTimeNext[3])
+        CloseOpenRadius = D(klines1MinTimeNext[4]) - D(klines1MinTimeNext[3])
         if side == 'Sell':
-            if (Decimal(klines1MinTimeNext[1]) > Decimal(klines1MinTimeNext[4])) and (Decimal(klines1MinTimeNext[4]) - Decimal(klines1MinTimeNext[3]) < klineRadius - (klineRadius * Decimal(60 / 100))) and (markPriceS > SGlobal or markPriceS > SLocal):
+            ThresholdRadiusSell = klineRadius - (klineRadius * D(60 / 100))
+            if (D(klines1MinTimeNext[1]) > D(klines1MinTimeNext[4])) and (CloseOpenRadius < ThresholdRadiusSell) and (markPriceS > SGlobal or markPriceS > SLocal):
                 return side
             else:
                 with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
                     f.write(f'BMQ: Ордер не прошел проверку.\n'
                             f'SGlobal: {SGlobal}, SLocal: {SLocal}\n'
                             f'MarkPriceS: {markPriceS}, MarkPrice: {markPrice}\n'
+                            f'KlinesOpen: {klines1MinTimeNext[1]}, KlinesClose: {klines1MinTimeNext[4]}\n'
+                            f'CloseOpenRadius: {CloseOpenRadius}, ThresholdRadiusSell: {ThresholdRadiusSell}\n'
                             f'Время - {datetime.now()}')
                 return None
         elif side == 'Buy':
-            if (Decimal(klines1MinTimeNext[1]) < Decimal(klines1MinTimeNext[4])) and (Decimal(klines1MinTimeNext[4]) - Decimal(klines1MinTimeNext[3]) > klineRadius - (klineRadius * Decimal(40 / 100))) and (markPriceR < RGlobal or markPriceR < RLocal):
+            ThresholdRadiusBuy = klineRadius - (klineRadius * D(40 / 100))
+            if (D(klines1MinTimeNext[1]) < D(klines1MinTimeNext[4])) and (CloseOpenRadius > ThresholdRadiusBuy) and (markPriceR < RGlobal or markPriceR < RLocal):
                 return side
             else:
                 with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
                     f.write(f'BMQ: Ордер не прошел проверку.\n'
                             f'RGlobal: {RGlobal}, RLocal: {RLocal}\n'
                             f'MarkPriceR: {markPriceR}, MarkPrice: {markPrice}\n'
+                            f'KlinesOpen: {klines1MinTimeNext[1]}, KlinesClose: {klines1MinTimeNext[4]}\n'
+                            f'CloseOpenRadius: {CloseOpenRadius}, ThresholdRadiusSell: {ThresholdRadiusBuy}\n'
                             f'Время - {datetime.now()}')
                 return None
     else:
@@ -173,33 +180,33 @@ def place_order(symbol, side, mark_price, roundQty, balanceWL, tp, sl):
             pprint(resp)
 
             # Более точное выставление тп и сл ордеров
-            entryPrice = round(Decimal(session.get_positions(
+            entryPrice = round(D(session.get_positions(
                 category='linear',
                 symbol=symbol
             )['result']['list'][0]['avgPrice']), roundQty[0])
-            entryPriceRadius = entryPrice - (entryPrice * Decimal(0.96))
+            entryPriceRadius = entryPrice - (entryPrice * D(0.96))
             if side == 'Sell':
                 entryPrice2 = round(entryPrice + entryPriceRadius, roundQty[0])
                 entryPrice3 = round(entryPrice2 + entryPriceRadius, roundQty[0])
                 entryPrice4 = round(entryPrice3 + entryPriceRadius, roundQty[0])
                 entryPrice5 = round(entryPrice4 + entryPriceRadius, roundQty[0])
-                tp_priceL = round(Decimal(1 - tp) * Decimal(entryPrice), roundQty[0])
-                tp_priceL2 = round(Decimal(1 - 0.007) * Decimal(entryPrice2), roundQty[0])
-                tp_priceL3 = round(Decimal(1 - 0.0048) * Decimal(entryPrice3), roundQty[0])
-                tp_priceL4 = round(Decimal(1 - 0.0036) * Decimal(entryPrice4), roundQty[0])
-                tp_priceL5 = round(Decimal(1 - 0.003) * Decimal(entryPrice5), roundQty[0])
-                sl_price = round(Decimal(1 + sl) * Decimal(entryPrice5), roundQty[0])
+                tp_priceL = round(D(1 - tp) * D(entryPrice), roundQty[0])
+                tp_priceL2 = round(D(1 - 0.007) * D(entryPrice2), roundQty[0])
+                tp_priceL3 = round(D(1 - 0.0048) * D(entryPrice3), roundQty[0])
+                tp_priceL4 = round(D(1 - 0.0036) * D(entryPrice4), roundQty[0])
+                tp_priceL5 = round(D(1 - 0.003) * D(entryPrice5), roundQty[0])
+                sl_price = round(D(1 + sl) * D(entryPrice5), roundQty[0])
             elif side == 'Buy':
                 entryPrice2 = round(entryPrice - entryPriceRadius, roundQty[0])
                 entryPrice3 = round(entryPrice2 - entryPriceRadius, roundQty[0])
                 entryPrice4 = round(entryPrice3 - entryPriceRadius, roundQty[0])
                 entryPrice5 = round(entryPrice4 - entryPriceRadius, roundQty[0])
-                tp_priceL = round(Decimal(1 + tp) * Decimal(entryPrice), roundQty[0])
-                tp_priceL2 = round(Decimal(1 + 0.007) * Decimal(entryPrice2), roundQty[0])
-                tp_priceL3 = round(Decimal(1 + 0.0048) * Decimal(entryPrice3), roundQty[0])
-                tp_priceL4 = round(Decimal(1 + 0.0036) * Decimal(entryPrice4), roundQty[0])
-                tp_priceL5 = round(Decimal(1 + 0.003) * Decimal(entryPrice5), roundQty[0])
-                sl_price = round(Decimal(1 - sl) * Decimal(entryPrice5), roundQty[0])
+                tp_priceL = round(D(1 + tp) * D(entryPrice), roundQty[0])
+                tp_priceL2 = round(D(1 + 0.007) * D(entryPrice2), roundQty[0])
+                tp_priceL3 = round(D(1 + 0.0048) * D(entryPrice3), roundQty[0])
+                tp_priceL4 = round(D(1 + 0.0036) * D(entryPrice4), roundQty[0])
+                tp_priceL5 = round(D(1 + 0.003) * D(entryPrice5), roundQty[0])
+                sl_price = round(D(1 - sl) * D(entryPrice5), roundQty[0])
             try:
                 print(session.set_trading_stop(
                     category='linear',
