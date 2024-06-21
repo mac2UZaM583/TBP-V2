@@ -85,29 +85,25 @@ def klineValidation(symbol, side, markPrice, roundQty, timeNow):
         markPriceR = markPrice + ((markPrice / 100) * 1.5)
         klineRadius = Decimal(klines1MinTimeNext[2]) - Decimal(klines1MinTimeNext[3])
         if side == 'Sell':
-            if Decimal(klines1MinTimeNext[1]) > Decimal(klines1MinTimeNext[4]):
-                if Decimal(klines1MinTimeNext[4]) - Decimal(klines1MinTimeNext[3]) < klineRadius - (klineRadius * Decimal(60 / 100)):
-                    if markPriceS > SGlobal or markPriceS > SLocal:
-                        return side
-                    else:
-                        with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
-                            f.write(f'BMQ: Ордер не прошел проверку.\n'
-                                    f'SGlobal: {SGlobal}, SLocal: {SLocal}\n'
-                                    f'MarkPriceS: {markPriceS}, MarkPrice: {markPrice}\n'
-                                    f'Время - {datetime.now()}')
-                        return None
+            if (Decimal(klines1MinTimeNext[1]) > Decimal(klines1MinTimeNext[4])) and (Decimal(klines1MinTimeNext[4]) - Decimal(klines1MinTimeNext[3]) < klineRadius - (klineRadius * Decimal(60 / 100))) and (markPriceS > SGlobal or markPriceS > SLocal):
+                return side
+            else:
+                with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                    f.write(f'BMQ: Ордер не прошел проверку.\n'
+                            f'SGlobal: {SGlobal}, SLocal: {SLocal}\n'
+                            f'MarkPriceS: {markPriceS}, MarkPrice: {markPrice}\n'
+                            f'Время - {datetime.now()}')
+                return None
         elif side == 'Buy':
-            if Decimal(klines1MinTimeNext[1]) < Decimal(klines1MinTimeNext[4]):
-                if Decimal(klines1MinTimeNext[4]) - Decimal(klines1MinTimeNext[3]) > klineRadius - (klineRadius * Decimal(40 / 100)):
-                    if markPriceR < RGlobal or markPriceR < RLocal:
-                        return side
-                    else:
-                        with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
-                            f.write(f'BMQ: Ордер не прошел проверку.\n'
-                                    f'RGlobal: {RGlobal}, RLocal: {RLocal}\n'
-                                    f'MarkPriceR: {markPriceR}, MarkPrice: {markPrice}\n'
-                                    f'Время - {datetime.now()}')
-                        return None
+            if (Decimal(klines1MinTimeNext[1]) < Decimal(klines1MinTimeNext[4])) and (Decimal(klines1MinTimeNext[4]) - Decimal(klines1MinTimeNext[3]) > klineRadius - (klineRadius * Decimal(40 / 100))) and (markPriceR < RGlobal or markPriceR < RLocal):
+                return side
+            else:
+                with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                    f.write(f'BMQ: Ордер не прошел проверку.\n'
+                            f'RGlobal: {RGlobal}, RLocal: {RLocal}\n'
+                            f'MarkPriceR: {markPriceR}, MarkPrice: {markPrice}\n'
+                            f'Время - {datetime.now()}')
+                return None
     else:
         with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
             f.write(f'BMQ: Ордер не прошел проверку.\n'
