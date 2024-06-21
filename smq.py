@@ -1,97 +1,72 @@
 from pybit.unified_trading import HTTP
 import time
 from decimal import Decimal
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, current_process
 
 THRESHOLD_PERCENT = 3
 session = HTTP()
 
-def scrcr1(queue):
+def fetch_data(queue):
     while True:
-        print('я бог криптовалюты и я анализирую рынок. попытка номер плю1')
-        data_old = session.get_tickers(category='linear')['result']['list']
-        pricesOld = []
-        for price in data_old:
-            pricesOld.append(Decimal(price['lastPrice']))
-        time.sleep(60)
-
-        data_new = session.get_tickers(category='linear')['result']['list']
-        for priceOld, priceNew in zip(data_old, data_new):
-            percent_change = round(((Decimal(priceNew['lastPrice']) - Decimal(priceOld['lastPrice'])) / Decimal(priceOld['lastPrice'])) * 100, 2)
-            if abs(percent_change) >= THRESHOLD_PERCENT and 'USDT' in priceNew['symbol']:
-                queue.put((priceNew['symbol'], percent_change))
-
-def scrcr2(queue):
-    while True:
-        print('я 2 бог криптовалюты и я анализирую рынок. попытка номер плю2')
-        data_old = session.get_tickers(category='linear')['result']['list']
-        pricesOld = []
-        for price in data_old:
-            pricesOld.append(Decimal(price['lastPrice']))
-        time.sleep(30)
-
-        data_new = session.get_tickers(category='linear')['result']['list']
-        for priceOld, priceNew in zip(data_old, data_new):
-            percent_change = round(((Decimal(priceNew['lastPrice']) - Decimal(priceOld['lastPrice'])) / Decimal(priceOld['lastPrice'])) * 100, 2)
-            if abs(percent_change) >= THRESHOLD_PERCENT and 'USDT' in priceNew['symbol']:
-                queue.put((priceNew['symbol'], percent_change))
-
-def scrcr3(queue):
-    while True:
-        print('я 3 бог криптовалюты и я анализирую рынок. попытка номер плю3')
-        data_old = session.get_tickers(category='linear')['result']['list']
-        pricesOld = []
-        for price in data_old:
-            pricesOld.append(Decimal(price['lastPrice']))
-        time.sleep(10)
-
-        data_new = session.get_tickers(category='linear')['result']['list']
-        for priceOld, priceNew in zip(data_old, data_new):
-            percent_change = round(((Decimal(priceNew['lastPrice']) - Decimal(priceOld['lastPrice'])) / Decimal(priceOld['lastPrice'])) * 100, 2)
-            if abs(percent_change) >= THRESHOLD_PERCENT and 'USDT' in priceNew['symbol']:
-                queue.put((priceNew['symbol'], percent_change))
-
-def scrcr4(queue):
-    while True:
-        print('я 4 бог криптовалюты и я анализирую рынок. попытка номер плю4')
-        data_old = session.get_tickers(category='linear')['result']['list']
-        pricesOld = []
-        for price in data_old:
-            pricesOld.append(Decimal(price['lastPrice']))
+        data = session.get_tickers(category='linear')['result']['list']
+        queue.put(data)
         time.sleep(5)
 
-        data_new = session.get_tickers(category='linear')['result']['list']
-        for priceOld, priceNew in zip(data_old, data_new):
-            percent_change = round(((Decimal(priceNew['lastPrice']) - Decimal(priceOld['lastPrice'])) / Decimal(priceOld['lastPrice'])) * 100, 2)
-            if abs(percent_change) >= THRESHOLD_PERCENT and 'USDT' in priceNew['symbol']:
-                queue.put((priceNew['symbol'], percent_change))
+def process_data(queue, result_queue, interval):
+    while True:
+        process_name = current_process().name
+        print(f'{process_name} анализирует рынок.')
+        
+        data_old = queue.get()
+        prices_old = {price['symbol']: Decimal(price['lastPrice']) for price in data_old}
+        time.sleep(interval)
+        
+        data_new = queue.get()
+        for price_new in data_new:
+            symbol = price_new['symbol']
+            if symbol in prices_old:
+                percent_change = round(((Decimal(price_new['lastPrice']) - prices_old[symbol]) / prices_old[symbol]) * 100, 2)
+                if abs(percent_change) >= THRESHOLD_PERCENT and 'USDT' in symbol:
+                    result_queue.put((symbol, percent_change))
             
 def smq():
-    queue = Queue()
-    process1 = Process(target=scrcr1, args=(queue,))
-    process2 = Process(target=scrcr2, args=(queue,))
-    process3 = Process(target=scrcr3, args=(queue,))
-    process4 = Process(target=scrcr4, args=(queue,))
-    process1.start()
-    process2.start()
-    process3.start()
-    process4.start()
+    data_queue = Queue()
+    result_queue = Queue()
+    fetcher = Process(target=fetch_data, args=(data_queue,))
+    processor1 = Process(target=process_data, name='process1', args=(data_queue, result_queue, 60))
+    processor2 = Process(target=process_data, name='process2', args=(data_queue, result_queue, 30))
+    processor3 = Process(target=process_data, name='process3', args=(data_queue, result_queue, 10))
+    processor4 = Process(target=process_data, name='process4', args=(data_queue, result_queue, 5))
+    fetcher.start()
+    processor1.start()
+    processor2.start()
+    processor3.start()
+    processor4.start()
 
-    result = queue.get()
-    if result is not None:
-        with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
-            if result[1] < 0:
-                f.write(f'🔴Ticker: {result[0]}\n'
-                        f'Percent - {result[1]}%')
-            if result[1] > 0:
-                f.write(f'🟢Ticker: {result[0]}\n'
-                        f'Percent - {result[1]}%')  
-        return result
+    try:
+        while True:
+            result = result_queue.get()
+            if result is not None:
+                with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                    if result[1] < 0:
+                        f.write(f'🔴Ticker: {result[0]}\n'
+                                f'Percent - {result[1]}%')
+                    if result[1] > 0:
+                        f.write(f'🟢Ticker: {result[0]}\n'
+                                f'Percent - {result[1]}%')
+                return result
+    except KeyboardInterrupt:
+        fetcher.terminate()
+        processor1.terminate()
+        processor2.terminate()
+        processor3.terminate()
+        processor4.terminate()
 
-    process1.join()
-    process2.join()
-    process3.join()
-    process4.join()
+        fetcher.join()
+        processor1.join()
+        processor2.join()
+        processor3.join()
+        processor4.join()
 
 # if __name__ == '__main__':
 #     while True:
