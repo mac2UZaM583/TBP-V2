@@ -17,10 +17,9 @@ def fetch_data(dataQueue):
 def process_data(dataQueue, result_queue):
     while True:
         data_old = dataQueue.get()
-        interval = 1
         prices_old = {price['symbol']: Decimal(price['lastPrice']) for price in data_old}
         while True:
-            time.sleep(interval)
+            time.sleep(1)
             print(f'Check data. Time: {datetime.now()}')
             
             data_new = session.get_tickers(category='linear')['result']['list']
