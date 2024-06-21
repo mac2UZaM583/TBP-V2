@@ -17,7 +17,12 @@ def fetch_data(dataQueue):
 def process_data(dataQueue, result_queue):
     while True:
         data_old = dataQueue.get()
-        intervals = [6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
+        intervals = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
         prices_old = {price['symbol']: Decimal(price['lastPrice']) for price in data_old}
         while len(intervals) > 0:
             time.sleep(intervals[0])
