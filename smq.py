@@ -37,23 +37,17 @@ def smq():
     process2 = Process(target=process_data, args=(dataQueue, result_queue))
     process1.start()
     process2.start()
-    try:
-        while True:
-            result = result_queue.get()
-            if result is not None:
-                with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
-                    if result[1] < 0:
-                        f.write(f'🔴Ticker: {result[0]}\n'
-                                f'Percent - {result[1]}%')
-                    if result[1] > 0:
-                        f.write(f'🟢Ticker: {result[0]}\n'
-                                f'Percent - {result[1]}%')
-                return result
-    except:
-        process1.terminate()
-        process2.terminate()
-        process1.join()
-        process2.join()
+    while True:
+        result = result_queue.get()
+        if result is not None:
+            with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                if result[1] < 0:
+                    f.write(f'🔴Ticker: {result[0]}\n'
+                            f'Percent - {result[1]}%')
+                if result[1] > 0:
+                    f.write(f'🟢Ticker: {result[0]}\n'
+                            f'Percent - {result[1]}%')
+            return result
 
 # if __name__ == '__main__':
 #     while True:
