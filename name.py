@@ -145,61 +145,53 @@ def ordersClear():
                 f.write(f'{datetime.now()} |{er}\n\n')
 
 # Установка более точных тп и сл после усреднения
-def TPSL_limit_orders():
-    tp = [0.007, 0.0048, 0.0036, 0.003]
+def TPSL():
+    tp = [0.012, 0.007, 0.0048, 0.0036, 0.003]
     sl = 0.030
-
     while True:
-        # Получаем начальное количество ордеров
-        orders_num = len(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'])
+        print('Проверка позиции')
+        info = session.get_positions(category='linear', settleCoin='USDT')['result']['list'][0]
 
-        while True:
-            print('Проверка позиции')
-            orders_num1 = len(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'])
+        if info['takeProfit'] == '':
+            symbol = info['symbol']
+            side = info['side']
+            round_qty = get_roundQty(symbol=symbol)
+            entry_price = D(info['avgPrice'])
+            orders_num = len(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'])
 
-            if orders_num1 < orders_num or orders_num1 == 1:
-                info = session.get_positions(category='linear', settleCoin='USDT')['result']['list'][0]
-                symbol = info['symbol']
-                side = info['side']
-                round_qty = get_roundQty(symbol=symbol)
-                entry_price = D(info['avgPrice'])
-
+            if side == 'Sell':
+                tp_price = round(entry_price * D(1 - tp[-(orders_num + 1)]), round_qty[0])
+            elif side == 'Buy':
+                tp_price = round(entry_price * D(1 + tp[-(orders_num + 1)]), round_qty[0])
+            
+            try:
+                print(session.set_trading_stop(
+                    category='linear',
+                    symbol=symbol,
+                    tpslMode='Full',
+                    takeProfit=tp_price,
+                    positionIdx=0
+                ))
+            except:
+                print('Тейк профит не переустановлен')
+            
+            if orders_num == 1:
                 if side == 'Sell':
-                    tp_price = round(entry_price * (1 - tp[-orders_num1]), round_qty[0])
+                    sl_price = round(entry_price * D(1 + sl), round_qty[0])
                 elif side == 'Buy':
-                    tp_price = round(entry_price * (1 + tp[-orders_num1]), round_qty[0])
+                    sl_price = round(entry_price * D(1 - sl), round_qty[0])
 
                 try:
-                    # Установка только тейк-профита
-                    response_tp = session.set_trading_stop(
+                    print(session.set_trading_stop(
                         category='linear',
                         symbol=symbol,
                         tpslMode='Full',
-                        takeProfit=tp_price,
+                        stopLoss=sl_price,
                         positionIdx=0
-                    )
-                    print(response_tp)
-
-                    # Если количество ордеров равно 1, устанавливаем также стоп-лосс
-                    if orders_num1 == 1:
-                        if side == 'Sell':
-                            sl_price = round(entry_price * (1 + sl), round_qty[0])
-                        elif side == 'Buy':
-                            sl_price = round(entry_price * (1 - sl), round_qty[0])
-
-                        response_sl = session.set_trading_stop(
-                            category='linear',
-                            symbol=symbol,
-                            tpslMode='Full',
-                            stopLoss=sl_price,
-                            positionIdx=0
-                        )
-                        print(response_sl)
-                except Exception as e:
-                    print(f'Ошибка установки тейк-профита и стоп-лосса: {e}')
-                break
-
-            time.sleep(3)
+                    ))
+                except:
+                    print('Стоплосс профит не переустановлен')
+        time.sleep(1)
 
 # Публикация ордера
 def place_order(symbol, side, roundQty, balanceWL, tp, sl):
@@ -248,33 +240,11 @@ def place_order(symbol, side, roundQty, balanceWL, tp, sl):
                 entryPrice3 = round(entryPrice2 + entryPriceRadius, roundQty[0])
                 entryPrice4 = round(entryPrice3 + entryPriceRadius, roundQty[0])
                 entryPrice5 = round(entryPrice4 + entryPriceRadius, roundQty[0])
-                tp_priceL = round(D(1 - tp) * D(entryPrice), roundQty[0])
-                tp_priceL2 = round(D(1 - 0.007) * D(entryPrice2), roundQty[0])
-                tp_priceL3 = round(D(1 - 0.0048) * D(entryPrice3), roundQty[0])
-                tp_priceL4 = round(D(1 - 0.0036) * D(entryPrice4), roundQty[0])
-                tp_priceL5 = round(D(1 - 0.003) * D(entryPrice5), roundQty[0])
-                sl_price = round(D(1 + sl) * D(entryPrice5), roundQty[0])
             elif side == 'Buy':
                 entryPrice2 = round(entryPrice - entryPriceRadius, roundQty[0])
                 entryPrice3 = round(entryPrice2 - entryPriceRadius, roundQty[0])
                 entryPrice4 = round(entryPrice3 - entryPriceRadius, roundQty[0])
                 entryPrice5 = round(entryPrice4 - entryPriceRadius, roundQty[0])
-                tp_priceL = round(D(1 + tp) * D(entryPrice), roundQty[0])
-                tp_priceL2 = round(D(1 + 0.007) * D(entryPrice2), roundQty[0])
-                tp_priceL3 = round(D(1 + 0.0048) * D(entryPrice3), roundQty[0])
-                tp_priceL4 = round(D(1 + 0.0036) * D(entryPrice4), roundQty[0])
-                tp_priceL5 = round(D(1 + 0.003) * D(entryPrice5), roundQty[0])
-                sl_price = round(D(1 - sl) * D(entryPrice5), roundQty[0])
-            try:
-                print(session.set_trading_stop(
-                    category='linear',
-                    symbol=symbol,
-                    tpslMode='Full',
-                    takeProfit=tp_priceL,
-                    positionIdx=0
-                ))
-            except:
-                print('Тейк профит не переустановлен')
 
             # Публикация лимитных ордеров
             try:
@@ -286,7 +256,6 @@ def place_order(symbol, side, roundQty, balanceWL, tp, sl):
                 side=side,
                 orderType='Limit',
                 price=str(entryPrice2),
-                takeProfit=tp_priceL2,
                 isLeverage=10,
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
@@ -304,7 +273,6 @@ def place_order(symbol, side, roundQty, balanceWL, tp, sl):
                     side=side,
                     orderType='Limit',
                     price=str(entryPrice3),
-                    takeProfit=tp_priceL3,
                     isLeverage=10,
                     tpTriggerBy='LastPrice',
                     slTriggerBy='LastPrice'
@@ -322,7 +290,6 @@ def place_order(symbol, side, roundQty, balanceWL, tp, sl):
                     side=side,
                     orderType='Limit',
                     price=str(entryPrice4),
-                    takeProfit=tp_priceL4,
                     isLeverage=10,
                     tpTriggerBy='LastPrice',
                     slTriggerBy='LastPrice'
@@ -340,8 +307,6 @@ def place_order(symbol, side, roundQty, balanceWL, tp, sl):
                     side=side,
                     orderType='Limit',
                     price=str(entryPrice5),
-                    takeProfit=tp_priceL5,
-                    stopLoss=sl_price,
                     isLeverage=10,
                     tpTriggerBy='LastPrice',
                     slTriggerBy='LastPrice'

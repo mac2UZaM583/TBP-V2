@@ -1,5 +1,5 @@
 from smq import smq
-from name import get_balance, place_order, get_roundQty, klineValidation, ordersClear, TPSL_limit_orders
+from name import get_balance, place_order, get_roundQty, klineValidation, ordersClear, TPSL
 from pprint import pprint
 import time
 from multiprocessing import Process
@@ -35,7 +35,7 @@ def main():
             pprint(er)
 
 process1 = Process(target=ordersClear, name='BMQ-V2-ORDERSCLEAR-1')
-process2 = Process(target=TPSL_limit_orders, name='BMQ-V2-TPSL_limit_orders')
+process2 = Process(target=TPSL, name='BMQ-V2-TPSL_limit_orders')
 process3 = Process(target=main, name='BMQ-V2-TEST-1')
 if __name__ == '__main__':
     process1.start()
