@@ -117,6 +117,7 @@ def klineValidation(symbol, side, roundQty, timeNow):
                     f'Время клайна - {klineCreateTime}\n'
                     f'Время записи - {timeNow}\n'
                     f'Klines: {klines}')
+        return None
 
 # Очистка ордеров
 def ordersClear():
