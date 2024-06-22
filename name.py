@@ -194,15 +194,11 @@ def TPSL():
         time.sleep(1)
 
 # Публикация ордера
-def place_order(symbol, side, roundQty, balanceWL, tp, sl):
+def place_order(symbol, side, roundQty, balanceWL):
     try:
-        if len(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list']) == 0:
+        if len(session.get_positions(category='linear', settleCoin='USDT')['result']['list']) == 0:
             mark_price = get_last_price(symbol)
             qty = round(balanceWL / mark_price, roundQty[1])
-            if side == 'Sell':
-                tp_priceL = round((1 - tp) * mark_price, roundQty[0])
-            elif side == 'Buy':
-                tp_priceL = round((1 + tp) * mark_price, roundQty[0])
 
             # Выставление маркет ордера
             try:
@@ -222,7 +218,6 @@ def place_order(symbol, side, roundQty, balanceWL, tp, sl):
                 marketUnit='baseCoin',
                 side=side,
                 orderType='Market',
-                takeProfit=tp_priceL,
                 isLeverage=10,
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
