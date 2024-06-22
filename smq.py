@@ -40,29 +40,3 @@ def smq():
                             f.write(f'🟢Ticker: {symbol}\n'
                                     f'Percent: {percent_change}%')
                     return symbol, percent_change
-            
-
-
-# def smq():
-#     dataQueue = Queue()
-#     result_queue = Queue()
-#     process1 = Process(target=fetch_data, args=(dataQueue,))
-#     process2 = Process(target=process_data, args=(dataQueue, result_queue))
-#     process1.start()
-#     process2.start()
-#     while True:
-#         result = result_queue.get()
-#         if result is not None:
-            # with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
-            #     if result[1] < 0:
-            #         f.write(f'🔴Ticker: {result[0]}\n'
-            #                 f'Percent - {result[1]}%')
-            #     if result[1] > 0:
-            #         f.write(f'🟢Ticker: {result[0]}\n'
-            #                 f'Percent - {result[1]}%')
-#             return result
-
-# if __name__ == '__main__':
-#     while True:
-#         signal = smq()
-#         print(signal)
