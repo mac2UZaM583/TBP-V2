@@ -4,9 +4,6 @@ from pprint import pprint
 import time
 from multiprocessing import Process
 
-tp = 0.012
-sl = 0.030
-
 def main():
     global headers, tp, sl
     while True:
@@ -23,11 +20,11 @@ def main():
                     if signal[1] < 0:
                         side = klineValidation(signal[0], 'Buy', roundQty, timeNow)
                         if side != None:
-                            place_order(signal[0], side, roundQty, balanceWL, tp, sl)
+                            place_order(signal[0], side, roundQty, balanceWL)
                     if signal[1] > 0:
                         side = klineValidation(signal[0], 'Sell', roundQty, timeNow)
                         if side != None:
-                            place_order(signal[0], side, roundQty, balanceWL, tp, sl)
+                            place_order(signal[0], side, roundQty, balanceWL)
                     break
                 except Exception as er:
                     pprint(er)
