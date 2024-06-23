@@ -159,12 +159,13 @@ def TPSL():
                 side = info['side']
                 round_qty = get_roundQty(symbol=symbol)
                 entry_price = D(info['avgPrice'])
-                orders_num = len(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'])
+                orders_limit_num = len([orders for orders in session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'] if orders['orderType'] == 'Limit'])
+                orders_tpsl_num = len([orders for orders in session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'] if orders['stopOrderType'] == 'TakeProfit'])
 
                 if side == 'Sell':
-                    tp_price = round(entry_price * D(1 - tp[-(orders_num + 1)]), round_qty[0])
+                    tp_price = round(entry_price * D(1 - tp[-(orders_limit_num + 1)]), round_qty[0])
                 elif side == 'Buy':
-                    tp_price = round(entry_price * D(1 + tp[-(orders_num + 1)]), round_qty[0])
+                    tp_price = round(entry_price * D(1 + tp[-(orders_limit_num + 1)]), round_qty[0])
                 
                 print(session.set_trading_stop(
                     category='linear',
@@ -174,7 +175,7 @@ def TPSL():
                     positionIdx=0
                 ))
                 
-                if orders_num == 1:
+                if orders_limit_num == 0 and orders_tpsl_num == 1:
                     if side == 'Sell':
                         sl_price = round(entry_price * D(1 + sl), round_qty[0])
                     elif side == 'Buy':
