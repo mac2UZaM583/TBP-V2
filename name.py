@@ -145,7 +145,7 @@ def ordersClear():
             with open('errorsOrdersClear.txt', 'a', encoding='utf-8') as f:
                 f.write(f'{datetime.now()} |{er}\n\n')
 
-# Установка более точных тп и сл после усреднения
+# Установка тейкпрофита и стоплосса
 def TPSL():
     tp = [0.012, 0.007, 0.0048, 0.0036, 0.003]
     sl = 0.030
@@ -156,32 +156,34 @@ def TPSL():
             info = session.get_positions(category='linear', settleCoin='USDT')['result']['list'][0]
             orders_new = session.get_open_orders(category='linear', settleCoin='USDT')['result']['list']
 
-            if info['takeProfit'] == '' or len(orders_new) != len(orders):
+            if info['takeProfit'] == '' or orders_new != orders:
                 orders = session.get_open_orders(category='linear', settleCoin='USDT')['result']['list']
                 symbol = info['symbol']
                 side = info['side']
                 round_qty = get_roundQty(symbol=symbol)
                 entry_price = D(info['avgPrice'])
-                orders_limit_num = len([orders for orders in orders_new if orders['orderType'] == 'Limit'])
-                orders_tpsl = [orders for orders in orders_new if orders['stopOrderType'] == 'TakeProfit']
-                orders_tpsl_num = len(orders_tpsl)
                 
-                if orders_tpsl_num != 0:
+                # Определение ордеров
+                orders_limit = []
+                orders_tpsl = []
+                for order in orders_new:
+                    if order['orderType'] == 'Limit':
+                        orders_limit.append(order)
+                    if order['stopOrderType'] == 'TakeProfit':
+                        orders_tpsl.append(order)
+                
+                # Отмена существуеющего тейкпрофита
+                if orders_tpsl:
                     session.cancel_order(
                         category='linear',
                         symbol=symbol,
                         orderId=orders_tpsl[-1]['orderId']
                     )
-                    if side == 'Sell':
-                        tp_price = round(entry_price * D(1 - tp[-(orders_limit_num + 1)]), round_qty[0])
-                    elif side == 'Buy':
-                        tp_price = round(entry_price * D(1 + tp[-(orders_limit_num + 1)]), round_qty[0])
-                else:
-                    if side == 'Sell':
-                        tp_price = round(entry_price * D(1 - tp[0]), round_qty[0])
-                    elif side == 'Buy':
-                        tp_price = round(entry_price * D(1 + tp[0]), round_qty[0])
-                
+
+                # Установка нового тп
+                tp_index = -(len(orders_limit) + 1) if orders_tpsl else 0
+                tp_perc_el = tp[tp_index]
+                tp_price = round(entry_price * (D(1 - tp_perc_el) if side == 'Sell' else D(1 + tp_perc_el)), round_qty[0])
                 print(session.set_trading_stop(
                     category='linear',
                     symbol=symbol,
@@ -190,19 +192,16 @@ def TPSL():
                     positionIdx=0
                 ))
                 
-                if orders_limit_num == 0 and orders_tpsl_num == 1:
-                    if side == 'Sell':
-                        sl_price = round(entry_price * D(1 + sl), round_qty[0])
-                    elif side == 'Buy':
-                        sl_price = round(entry_price * D(1 - sl), round_qty[0])
-
-                    print(session.set_trading_stop(
+                # Установка сл
+                if not orders_limit and len(orders_tpsl) == 1:
+                    sl_price = round(entry_price * (D(1 + sl) if side == 'Sell' else D(1 - sl)), round_qty[0])
+                    session.set_trading_stop(
                         category='linear',
                         symbol=symbol,
                         tpslMode='Full',
                         stopLoss=sl_price,
                         positionIdx=0
-                    ))
+                    )
             time.sleep(1)
         except:
             time.sleep(1)
