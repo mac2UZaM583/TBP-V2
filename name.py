@@ -267,7 +267,6 @@ def place_order(symbol, side, roundQty, balanceWL):
                 side=side,
                 orderType='Limit',
                 price=str(entryPrice2),
-                takeProfit=0,
                 isLeverage=10,
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
