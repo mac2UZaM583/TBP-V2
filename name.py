@@ -149,23 +149,40 @@ def ordersClear():
 def TPSL():
     tp = [0.012, 0.007, 0.0048, 0.0036, 0.003]
     sl = 0.030
+    orders = session.get_open_orders(category='linear', settleCoin='USDT')['result']['list']
     while True:
         try:
             print('Проверка позиции')
             info = session.get_positions(category='linear', settleCoin='USDT')['result']['list'][0]
+            orders_new = session.get_open_orders(category='linear', settleCoin='USDT')['result']['list']
 
-            if info['takeProfit'] == '':
+            if info['takeProfit'] == '' or len(orders_new) != len(orders):
+                orders = session.get_open_orders(category='linear', settleCoin='USDT')['result']['list']
                 symbol = info['symbol']
                 side = info['side']
                 round_qty = get_roundQty(symbol=symbol)
                 entry_price = D(info['avgPrice'])
-                orders_limit_num = len([orders for orders in session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'] if orders['orderType'] == 'Limit'])
-                orders_tpsl_num = len([orders for orders in session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'] if orders['stopOrderType'] == 'TakeProfit'])
+                orders_limit_num = len([orders for orders in orders_new if orders['orderType'] == 'Limit'])
+                orders_tpsl = [orders for orders in orders_new if orders['stopOrderType'] == 'TakeProfit']
+                orders_tpsl_num = len(orders_tpsl)
 
                 if side == 'Sell':
                     tp_price = round(entry_price * D(1 - tp[-(orders_limit_num + 1)]), round_qty[0])
                 elif side == 'Buy':
                     tp_price = round(entry_price * D(1 + tp[-(orders_limit_num + 1)]), round_qty[0])
+                
+                if orders_tpsl_num != 0:
+                    session.cancel_order(
+                        category='linear',
+                        symbol=symbol,
+                        orderId=orders_tpsl['orderId']
+                    )
+                else:
+                    if side == 'Sell':
+                        tp_price = round(entry_price * D(1 - tp[0]), round_qty[0])
+                    elif side == 'Buy':
+                        tp_price = round(entry_price * D(1 + tp[0]), round_qty[0])
+                    
                 
                 print(session.set_trading_stop(
                     category='linear',
@@ -250,6 +267,7 @@ def place_order(symbol, side, roundQty, balanceWL):
                 side=side,
                 orderType='Limit',
                 price=str(entryPrice2),
+                takeProfit=0,
                 isLeverage=10,
                 tpTriggerBy='LastPrice',
                 slTriggerBy='LastPrice'
@@ -312,5 +330,4 @@ def place_order(symbol, side, roundQty, balanceWL):
     except Exception as er:
         with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
             f.write(f'Ошибка в Place Order: \n{er}\n Время: {datetime.now()}')
-
 
