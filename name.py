@@ -170,7 +170,7 @@ def TPSL():
                     session.cancel_order(
                         category='linear',
                         symbol=symbol,
-                        orderId=orders_tpsl['orderId']
+                        orderId=orders_tpsl[-1]['orderId']
                     )
                     if side == 'Sell':
                         tp_price = round(entry_price * D(1 - tp[-(orders_limit_num + 1)]), round_qty[0])
@@ -181,7 +181,6 @@ def TPSL():
                         tp_price = round(entry_price * D(1 - tp[0]), round_qty[0])
                     elif side == 'Buy':
                         tp_price = round(entry_price * D(1 + tp[0]), round_qty[0])
-                    
                 
                 print(session.set_trading_stop(
                     category='linear',
