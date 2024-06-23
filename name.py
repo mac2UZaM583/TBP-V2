@@ -150,22 +150,22 @@ def TPSL():
     tp = [0.012, 0.007, 0.0048, 0.0036, 0.003]
     sl = 0.030
     while True:
-        print('Проверка позиции')
-        info = session.get_positions(category='linear', settleCoin='USDT')['result']['list'][0]
+        try:
+            print('Проверка позиции')
+            info = session.get_positions(category='linear', settleCoin='USDT')['result']['list'][0]
 
-        if info['takeProfit'] == '':
-            symbol = info['symbol']
-            side = info['side']
-            round_qty = get_roundQty(symbol=symbol)
-            entry_price = D(info['avgPrice'])
-            orders_num = len(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'])
+            if info['takeProfit'] == '':
+                symbol = info['symbol']
+                side = info['side']
+                round_qty = get_roundQty(symbol=symbol)
+                entry_price = D(info['avgPrice'])
+                orders_num = len(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'])
 
-            if side == 'Sell':
-                tp_price = round(entry_price * D(1 - tp[-(orders_num + 1)]), round_qty[0])
-            elif side == 'Buy':
-                tp_price = round(entry_price * D(1 + tp[-(orders_num + 1)]), round_qty[0])
-            
-            try:
+                if side == 'Sell':
+                    tp_price = round(entry_price * D(1 - tp[-(orders_num + 1)]), round_qty[0])
+                elif side == 'Buy':
+                    tp_price = round(entry_price * D(1 + tp[-(orders_num + 1)]), round_qty[0])
+                
                 print(session.set_trading_stop(
                     category='linear',
                     symbol=symbol,
@@ -173,16 +173,13 @@ def TPSL():
                     takeProfit=tp_price,
                     positionIdx=0
                 ))
-            except:
-                print('Тейк профит не переустановлен')
-            
-            if orders_num == 1:
-                if side == 'Sell':
-                    sl_price = round(entry_price * D(1 + sl), round_qty[0])
-                elif side == 'Buy':
-                    sl_price = round(entry_price * D(1 - sl), round_qty[0])
+                
+                if orders_num == 1:
+                    if side == 'Sell':
+                        sl_price = round(entry_price * D(1 + sl), round_qty[0])
+                    elif side == 'Buy':
+                        sl_price = round(entry_price * D(1 - sl), round_qty[0])
 
-                try:
                     print(session.set_trading_stop(
                         category='linear',
                         symbol=symbol,
@@ -190,9 +187,9 @@ def TPSL():
                         stopLoss=sl_price,
                         positionIdx=0
                     ))
-                except:
-                    print('Стоплосс профит не переустановлен')
-        time.sleep(1)
+            time.sleep(1)
+        except:
+            time.sleep(1)
 
 # Публикация ордера
 def place_order(symbol, side, roundQty, balanceWL):
