@@ -4,6 +4,7 @@ from decimal import Decimal
 from datetime import datetime
 
 THRESHOLD_PERCENT = 3
+LIMIT_PERCENT = 8
 session = HTTP()
 
 def fetch_data():
@@ -31,7 +32,7 @@ def smq():
             symbol = price_new['symbol']
             if symbol in prices_old:
                 percent_change = round(((Decimal(price_new['lastPrice']) - prices_old[symbol]) / prices_old[symbol]) * 100, 2)
-                if abs(percent_change) >= THRESHOLD_PERCENT and 'USDT' in symbol:
+                if abs(percent_change) >= THRESHOLD_PERCENT and abs(percent_change) < LIMIT_PERCENT and 'USDT' in symbol:
                     with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
                         if percent_change < 0:
                             f.write(f'🔴Ticker: {symbol}\n'
