@@ -165,11 +165,6 @@ def TPSL():
                 orders_limit_num = len([orders for orders in orders_new if orders['orderType'] == 'Limit'])
                 orders_tpsl = [orders for orders in orders_new if orders['stopOrderType'] == 'TakeProfit']
                 orders_tpsl_num = len(orders_tpsl)
-
-                if side == 'Sell':
-                    tp_price = round(entry_price * D(1 - tp[-(orders_limit_num + 1)]), round_qty[0])
-                elif side == 'Buy':
-                    tp_price = round(entry_price * D(1 + tp[-(orders_limit_num + 1)]), round_qty[0])
                 
                 if orders_tpsl_num != 0:
                     session.cancel_order(
@@ -177,6 +172,10 @@ def TPSL():
                         symbol=symbol,
                         orderId=orders_tpsl['orderId']
                     )
+                    if side == 'Sell':
+                        tp_price = round(entry_price * D(1 - tp[-(orders_limit_num + 1)]), round_qty[0])
+                    elif side == 'Buy':
+                        tp_price = round(entry_price * D(1 + tp[-(orders_limit_num + 1)]), round_qty[0])
                 else:
                     if side == 'Sell':
                         tp_price = round(entry_price * D(1 - tp[0]), round_qty[0])
