@@ -230,7 +230,7 @@ def place_order(symbol, side, roundQty, balanceWL):
                 pprint(session.switch_margin_mode(
                     category="linear",
                     symbol=symbol,
-                    tradeMode=0,
+                    tradeMode=1,
                     buyLeverage="10",
                     sellLeverage="10",
                 ))
