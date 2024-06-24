@@ -148,7 +148,7 @@ def ordersClear():
 # Установка тейкпрофита и стоплосса
 def TPSL():
     tp = [0.012, 0.007, 0.0048, 0.0036, 0.003]
-    sl = 0.030
+    sl = 0.070
     orders = session.get_open_orders(category='linear', settleCoin='USDT')['result']['list']
     while True:
         try:
@@ -193,16 +193,27 @@ def TPSL():
                 if orders_limit_num == 0 and orders_tpsl_num == 1:
                     if side == 'Sell':
                         sl_price = round(entry_price * D(1 + sl), round_qty[0])
+                        sl_price2 = round(entry_price * D(1 + (sl + 0.010)), round_qty[0])
                     elif side == 'Buy':
                         sl_price = round(entry_price * D(1 - sl), round_qty[0])
+                        sl_price2 = round(entry_price * D(1 - (sl + 0.010)), round_qty[0])
 
-                    print(session.set_trading_stop(
-                        category='linear',
-                        symbol=symbol,
-                        tpslMode='Full',
-                        stopLoss=sl_price,
-                        positionIdx=0
-                    ))
+                    try:
+                        print(session.set_trading_stop(
+                            category='linear',
+                            symbol=symbol,
+                            tpslMode='Full',
+                            stopLoss=sl_price,
+                            positionIdx=0
+                        ))
+                    except:
+                        print(session.set_trading_stop(
+                            category='linear',
+                            symbol=symbol,
+                            tpslMode='Full',
+                            stopLoss=sl_price2,
+                            positionIdx=0
+                        ))
             time.sleep(1)
         except:
             time.sleep(1)
@@ -243,7 +254,7 @@ def place_order(symbol, side, roundQty, balanceWL):
                 category='linear',
                 symbol=symbol
             )['result']['list'][0]['avgPrice']), roundQty[0])
-            entryPriceRadius = entryPrice - (entryPrice * D(0.96))
+            entryPriceRadius = entryPrice - (entryPrice * D(0.97))
             if side == 'Sell':
                 entryPrice2 = round(entryPrice + entryPriceRadius, roundQty[0])
                 entryPrice3 = round(entryPrice2 + entryPriceRadius, roundQty[0])
