@@ -95,8 +95,8 @@ def main():
             '''POSITION ↓
             '''
             pre_main2(signal=signal, positions=positions)
-        except Exception as er:
-            print(er)
+        except:
+            print('er')
 
 if __name__ == '__main__':
     main()
