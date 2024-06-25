@@ -44,7 +44,11 @@ def pre_main1():
         else:
             session.cancel_all_orders(category='linear', settleCoin='USDT')
 
-        signal = smq(data_old=data_old, prices_old=prices_old, start_time=start_time)
+        if time.time() - start_time >= 60:
+            data_old = fetch_data()
+            prices_old = {price['symbol']: D(price['lastPrice']) for price in data_old}
+            start_time = time.time()
+        signal = smq(prices_old=prices_old)
         if signal != None:
             return signal, positions
 
@@ -91,8 +95,8 @@ def main():
             '''POSITION ↓
             '''
             pre_main2(signal=signal, positions=positions)
-        except:
-            print('error')
+        except Exception as er:
+            print(er)
 
 if __name__ == '__main__':
     main()
