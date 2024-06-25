@@ -29,12 +29,7 @@ def validate(data_new, prices_old):
             else:
                 None
 
-def smq(data_old, prices_old, start_time):
-    if time.time() - start_time >= 60:
-        data_old = fetch_data()
-        prices_old = {price['symbol']: D(price['lastPrice']) for price in data_old}
-        start_time = time.time()
-
+def smq(prices_old):
     time.sleep(0.5)
     print(f'Check data. Time: {datetime.now()}')
     data_new = session.get_tickers(category='linear')['result']['list']
