@@ -1,6 +1,6 @@
 from pybit.unified_trading import HTTP
 import time
-from decimal import Decimal
+from decimal import Decimal as D
 from datetime import datetime
 
 THRESHOLD_PERCENT = 3
@@ -12,32 +12,42 @@ def fetch_data():
     print(f'{datetime.now()}: Получил новые данные')
     return data
 
-def smq():
+def validate(data_new, prices_old):
+    for price_new in data_new:
+        symbol = price_new['symbol']
+        if symbol in prices_old:
+            percent_change = round(((D(price_new['lastPrice']) - prices_old[symbol]) / prices_old[symbol]) * 100, 2)
+            if abs(percent_change) >= THRESHOLD_PERCENT and abs(percent_change) < LIMIT_PERCENT and 'USDT' in symbol:
+                with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                    if percent_change < 0:
+                        f.write(f'🔴Ticker: {symbol}\n'
+                                f'Percent: {percent_change}%')
+                    if percent_change > 0:
+                        f.write(f'🟢Ticker: {symbol}\n'
+                                f'Percent: {percent_change}%')
+                return symbol, percent_change
+            else:
+                None
+
+def smq(data_old, prices_old, start_time):
+    if time.time() - start_time >= 60:
+        data_old = fetch_data()
+        prices_old = {price['symbol']: D(price['lastPrice']) for price in data_old}
+        start_time = time.time()
+
+    time.sleep(0.5)
+    print(f'Check data. Time: {datetime.now()}')
+    data_new = session.get_tickers(category='linear')['result']['list']
+    signal = validate(data_new=data_new, prices_old=prices_old)
+    if signal != None:
+        return signal
+
+if __name__ == '__main__':
     data_old = fetch_data()
-    prices_old = {price['symbol']: Decimal(price['lastPrice']) for price in data_old}
+    prices_old = {price['symbol']: D(price['lastPrice']) for price in data_old}
     start_time = time.time()
-
     while True:
-        # Проверка, прошла ли минута для обновления старых данных
-        if time.time() - start_time >= 60:
-            data_old = fetch_data()
-            prices_old = {price['symbol']: Decimal(price['lastPrice']) for price in data_old}
-            start_time = time.time()
-
-        time.sleep(0.5)
-        print(f'Check data. Time: {datetime.now()}')
-        
-        data_new = session.get_tickers(category='linear')['result']['list']
-        for price_new in data_new:
-            symbol = price_new['symbol']
-            if symbol in prices_old:
-                percent_change = round(((Decimal(price_new['lastPrice']) - prices_old[symbol]) / prices_old[symbol]) * 100, 2)
-                if abs(percent_change) >= THRESHOLD_PERCENT and abs(percent_change) < LIMIT_PERCENT and 'USDT' in symbol:
-                    with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
-                        if percent_change < 0:
-                            f.write(f'🔴Ticker: {symbol}\n'
-                                    f'Percent: {percent_change}%')
-                        if percent_change > 0:
-                            f.write(f'🟢Ticker: {symbol}\n'
-                                    f'Percent: {percent_change}%')
-                    return symbol, percent_change
+        signal = smq(data_old=data_old, prices_old=prices_old, start_time=start_time)
+        if signal != None:
+            print(signal)
+            break
