@@ -38,7 +38,7 @@ def kline_check(kline_old, symbol, i):
         kline_new = get_kline(symbol=symbol, interval=1, limit=1)[0]
         time.sleep(0.3)
         if kline_old[0] != kline_new[0]:
-            return kline_new
+            return get_kline(symbol=symbol, interval=1, limit=2)[-1]
         
 def kline_verificate(side, kline, kline_radius, close_open_radius, s_global, s_local, r_global, r_local, s_mark_price, r_mark_price, mark_price, round_qty):
     if side == 'Sell':
