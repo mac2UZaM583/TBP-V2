@@ -42,19 +42,19 @@ def kline_check(kline_old, symbol, i):
         
 def kline_verificate(side, kline, kline_radius, close_open_radius, s_global, s_local, r_global, r_local, s_mark_price, r_mark_price, mark_price, round_qty):
     if side == 'Sell':
-            ThresholdRadiusSell = round(kline_radius - (kline_radius * D(60 / 100)), round_qty[0])
-            if (D(kline[1]) > D(kline[4])) and (close_open_radius < ThresholdRadiusSell) and (s_mark_price > s_global or s_mark_price > s_local):
-                return side
-            else:
-                print('ордер не прошел проверку21')
-                with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
-                    f.write(f'BMQ: Ордер не прошел проверку.\n'
-                            f'SGlobal: {s_global}, SLocal: {s_local}\n'
-                            f'MarkPriceS: {s_mark_price}, MarkPrice: {mark_price}\n'
-                            f'KlinesOpen: {kline[1]}, KlinesClose: {kline[4]}\n'
-                            f'CloseOpenRadius: {close_open_radius}, ThresholdRadiusSell: {ThresholdRadiusSell}\n'
-                            f'Время - {datetime.now()}')
-                return None
+        ThresholdRadiusSell = round(kline_radius - (kline_radius * D(60 / 100)), round_qty[0])
+        if (D(kline[1]) > D(kline[4])) and (close_open_radius < ThresholdRadiusSell) and (s_mark_price > s_global or s_mark_price > s_local):
+            return side
+        else:
+            print('ордер не прошел проверку21')
+            with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                f.write(f'BMQ: Ордер не прошел проверку.\n'
+                        f'SGlobal: {s_global}, SLocal: {s_local}\n'
+                        f'MarkPriceS: {s_mark_price}, MarkPrice: {mark_price}\n'
+                        f'KlinesOpen: {kline[1]}, KlinesClose: {kline[4]}\n'
+                        f'CloseOpenRadius: {close_open_radius}, ThresholdRadiusSell: {ThresholdRadiusSell}\n'
+                        f'Время - {datetime.now()}')
+            return None
     else:
         ThresholdRadiusBuy = round(kline_radius - (kline_radius * D(40 / 100)), round_qty[0])
         if (D(kline[1]) < D(kline[4])) and (close_open_radius > ThresholdRadiusBuy) and (r_mark_price < r_global or r_mark_price < r_local):
