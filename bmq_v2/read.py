@@ -38,7 +38,7 @@ def kline_check(kline_old, symbol, i):
         kline_new = get_kline(symbol=symbol, interval=1, limit=1)[0]
         time.sleep(0.3)
         if kline_old[0] != kline_new[0]:
-            return get_kline(symbol=symbol, interval=1, limit=2)[-1]
+            return get_kline(symbol=symbol, interval=1, limit=2)
         
 def kline_verificate(side, kline, kline_radius, close_open_radius, s_global, s_local, r_global, r_local, s_mark_price, r_mark_price, mark_price, round_qty):
     if side == 'Sell':
@@ -46,7 +46,6 @@ def kline_verificate(side, kline, kline_radius, close_open_radius, s_global, s_l
         if (D(kline[1]) > D(kline[4])) and (close_open_radius < ThresholdRadiusSell) and (s_mark_price > s_global or s_mark_price > s_local):
             return side
         else:
-            print('ордер не прошел проверку21')
             with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
                 f.write(f'BMQ: Ордер не прошел проверку.\n'
                         f'SGlobal: {s_global}, SLocal: {s_local}\n'
@@ -60,7 +59,6 @@ def kline_verificate(side, kline, kline_radius, close_open_radius, s_global, s_l
         if (D(kline[1]) < D(kline[4])) and (close_open_radius > ThresholdRadiusBuy) and (r_mark_price < r_global or r_mark_price < r_local):
             return side
         else:
-            print('ордер не прошел проверку22')
             with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
                 f.write(f'BMQ: Ордер не прошел проверку.\n'
                         f'RGlobal: {r_global}, RLocal: {r_local}\n'
@@ -76,9 +74,8 @@ def kline_validate(symbol, side, roundQty, timeNow):
     klineCreateTime = int(klines1MinTime[0][:-3])
     
     if timeNow > klineCreateTime and klines >= 240:
-        print(symbol)
-        kline_check_none = kline_check(symbol=symbol, kline_old=klines1MinTime, i=1)
-        kline_check1 = kline_check(symbol=symbol, kline_old=kline_check_none, i=2)
+        kline_check_none = kline_check(symbol=symbol, kline_old=klines1MinTime, i=1)[0]
+        kline_check1 = kline_check(symbol=symbol, kline_old=kline_check_none, i=2)[-1]
         print('Run completed^')
         
         # DEFINITION OF VALIDITY
@@ -88,10 +85,18 @@ def kline_validate(symbol, side, roundQty, timeNow):
         markPriceR = round(markPrice + ((markPrice / 100) * D(1.5)), roundQty[0])
         klineRadius = D(kline_check1[2]) - D(kline_check1[3])
         CloseOpenRadius = D(kline_check1[4]) - D(kline_check1[3])
-        kline_verificate(side=side, kline=kline_check1, kline_radius=klineRadius, close_open_radius=CloseOpenRadius, s_global=SGlobal, s_local=SLocal, 
-                         r_global=RGlobal, r_local=RLocal, s_mark_price=markPriceS, r_mark_price=markPriceR, mark_price=markPrice, round_qty=roundQty)
+        side = kline_verificate(side=side, 
+                                kline=kline_check1, 
+                                kline_radius=klineRadius, 
+                                close_open_radius=CloseOpenRadius, 
+                                s_global=SGlobal, s_local=SLocal, 
+                                r_global=RGlobal, r_local=RLocal, 
+                                s_mark_price=markPriceS, r_mark_price=markPriceR, 
+                                mark_price=markPrice, round_qty=roundQty)
+        if side != None:
+            return side
+
     else:
-        print('ордер не прошел проверку1')
         with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
             f.write(f'BMQ: Ордер не прошел проверку.\n'
                     f'Время клайна - {klineCreateTime}\n'

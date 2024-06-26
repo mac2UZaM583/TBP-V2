@@ -46,30 +46,35 @@ def place_order(symbol, side, qty):
         with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
             f.write(f'Ошибка в Place Order: \nВремя: {datetime.now()}\n{er}')
 
-def clear_tp(orders_tp, orders_limit_num, tp):
-    position = session.get_positions(category='linear', settleCoin='USDT')['result']['list'][-1]
+def clear_tp(position, orders_tp, orders_limit_num, tp):
     symbol = position['symbol']        
     side = position['side']
     avg_price = D(position['avgPrice'])
     round_qty = get_roundQty(symbol)
-    tp_position = round(D(position['takeProfit']), round_qty[0])
-    tp_price = round(avg_price + ((avg_price * D(tp[-(orders_limit_num+1)]) * (-1 if side == 'Sell' else 1))), round_qty[0])
-    if orders_tp and tp_position != tp_price:
-        if tp_position != tp_price:
-            session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', takeProfit='0', positionIdx=0)
-            return symbol, tp_price, side
-    else:
-        return None, None, None
+    if position['takeProfit'] != '':
+        tp_position = round(D(position['takeProfit']), round_qty[0])
+        tp_price = round(avg_price + ((avg_price * tp[-(orders_limit_num + 1)] * (-1 if side == 'Sell' else 1))), round_qty[0])
+        if orders_tp and tp_position != tp_price:
+            if tp_position != tp_price:
+                session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', takeProfit='0', positionIdx=0)
 
-def TP(symbol, orders_tp, tp_price):
+def TP(position, orders_tp, orders_limit_num, tp):
     if not orders_tp:
-        session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', takeProfit=tp_price, positionIdx=0)
-
-def SL(symbol, side, orders_sl, orders_limit, sl):
-    if not orders_sl and not orders_limit:
+        symbol = position['symbol']
+        side = position['side']
+        avg_price = D(position['avgPrice'])
         round_qty = get_roundQty(symbol)
+        tp_price = round(avg_price + ((avg_price * tp[-(orders_limit_num + 1)]) * (-1 if side == 'Sell' else 1)), round_qty[0])
+        session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', takeProfit=tp_price, positionIdx=0)
+        
+
+def SL(position, orders_sl, orders_limit, sl):
+    if not orders_sl and not orders_limit:
+        symbol = position['symbol']
+        side = position['side']
         avg_price = get_avg_position_price()
-        sl_price = round(avg_price + ((avg_price * D(sl) * (1 if side == 'Sell' else -1))), round_qty[0])
+        round_qty = get_roundQty(symbol)
+        sl_price = round(avg_price + ((avg_price * sl * (1 if side == 'Sell' else -1))), round_qty[0])
         session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', stopLoss=sl_price, positionIdx=0)
 
 '''MORE ↓
