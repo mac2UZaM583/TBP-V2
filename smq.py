@@ -3,7 +3,7 @@ import time
 from decimal import Decimal as D
 from datetime import datetime
 
-THRESHOLD_PERCENT = 3
+THRESHOLD_PERCENT = 0.1
 LIMIT_PERCENT = 8
 session = HTTP()
 
@@ -21,10 +21,12 @@ def validate(data_new, prices_old):
                 with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
                     if percent_change < 0:
                         f.write(f'🔴Ticker: {symbol}\n'
-                                f'Percent: {percent_change}%')
+                                f'Percent: {percent_change}%\n'
+                                f'Datetime: {datetime.now()}')
                     if percent_change > 0:
                         f.write(f'🟢Ticker: {symbol}\n'
-                                f'Percent: {percent_change}%')
+                                f'Percent: {percent_change}%\n'
+                                f'Datetime: {datetime.now()}')
                 return symbol, percent_change
             else:
                 None
@@ -42,7 +44,11 @@ if __name__ == '__main__':
     prices_old = {price['symbol']: D(price['lastPrice']) for price in data_old}
     start_time = time.time()
     while True:
-        signal = smq(data_old=data_old, prices_old=prices_old, start_time=start_time)
+        if time.time() - start_time >= 60:
+            data_old = fetch_data()
+            prices_old = {price['symbol']: D(price['lastPrice']) for price in data_old}
+            start_time = time.time()
+        signal = smq(prices_old=prices_old)
         if signal != None:
-            print(signal)
-            break
+            # break
+            pass

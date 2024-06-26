@@ -22,10 +22,11 @@ from bmq_v2.write import (
 )
 from decimal import Decimal as D
 import time
+import traceback
 
 print(f'\n\nSTART\n\n')
-tp = [0.012, 0.007, 0.0048, 0.0036, 0.003]
-sl = 0.070
+tp = [D(0.012), D(0.007), D(0.0048), D(0.0036), D(0.003)]
+sl = D(0.070)
 
 '''PRE ↓
 '''
@@ -37,10 +38,10 @@ def pre_main1():
         positions = session.get_positions(category='linear', settleCoin='USDT')['result']['list']
         if positions:
             orders_limit, orders_tp, orders_sl = od(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'])
-            symbol, tp_price, side = ctp(orders_tp=orders_tp, orders_limit_num=len(orders_limit), tp=tp)
+            ctp(position=positions[-1], orders_tp=orders_tp, orders_limit_num=len(orders_limit), tp=tp)
             orders_limit, orders_tp, orders_sl = od(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'])
-            TP(symbol=symbol, orders_tp=orders_tp, tp_price=tp_price)
-            SL(symbol=symbol, side=side, orders_sl=orders_sl, orders_limit=orders_limit, sl=sl)
+            TP(position=positions[-1], orders_tp=orders_tp, orders_limit_num=len(orders_limit), tp=tp)
+            SL(position=positions[-1], orders_sl=orders_sl, orders_limit=orders_limit, sl=sl)
         else:
             session.cancel_all_orders(category='linear', settleCoin='USDT')
 
@@ -62,10 +63,6 @@ def ppre_main1(signal, side, qty, roundQty):
         pol(symbol=signal[0], side=side, qty=qty, price=price, i=i+1)
     return avg_position_price, radius_price
 
-def ppre_main2(avg_position_price, roundQty, signal, side):
-    tp_price = round(avg_position_price + ((avg_position_price * D(tp[0]) * (-1 if side == 'Sell' else 1))), roundQty[0])
-    session.set_trading_stop(category='linear', symbol=signal[0], takeProfit=tp_price, positionIdx=0)
-
 '''PRE/POSITION ↓
 '''
 def pre_main2(signal, positions):
@@ -76,14 +73,11 @@ def pre_main2(signal, positions):
         session.cancel_all_orders(category="linear", settleCoin='USDT')
         side = kV(symbol=signal[0], side='Buy' if signal[1] < 0 else 'Sell', roundQty=roundQty, timeNow=timeNow)
         if side != None:
-            print(f'Side {side}')
             smm(symbol=signal[0])
             mark_price = gl(signal[0])
             qty = round(balanceWL / mark_price, roundQty[1])
-            po(symbol=signal[0], side=side, qty=qty)
-            
-            avg_position_price, radius_price = ppre_main1(signal=signal, side=side, qty=qty, roundQty=roundQty)
-            ppre_main2(avg_position_price=avg_position_price, signal=signal, side=side, roundQty=roundQty)
+            po(symbol=signal[0], side=side, qty=qty)   
+            ppre_main1(signal=signal, side=side, qty=qty, roundQty=roundQty)
 
 def main():
     while True:
@@ -95,8 +89,8 @@ def main():
             '''POSITION ↓
             '''
             pre_main2(signal=signal, positions=positions)
-        except:
-            print('er')
+        except Exception:
+            traceback.print_exc()
 
 if __name__ == '__main__':
     main()
