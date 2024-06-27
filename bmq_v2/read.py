@@ -102,7 +102,7 @@ def kline_validate(symbol, side, roundQty, timeNow):
         return None
 
 '''POSITION ↓
-'''
+'''     
 def get_balance():
     return D(session.get_wallet_balance(accountType='UNIFIED', coin='USDT')['result']['list'][0]['coin'][0]['walletBalance'])
     

@@ -9,14 +9,15 @@ from bmq_v2.read import (
     get_roundQty as gr, 
     get_last_price as gl, 
     kline_validate as kV, 
-    orders_distribution as od
+    orders_distribution as od,
 )
 from bmq_v2.write import (
     switch_margin_mode as smm, 
     place_orders_limit as pol, 
     place_order as po, 
     TP,
-    SL
+    SL,
+    cancel_position
 )
 from decimal import Decimal as D
 import time
@@ -77,7 +78,10 @@ def main():
             '''
             pre_main2(signal=signal, positions=positions)
         except:
-            traceback.print_exc()
+            cancel_position()
+            er = traceback.format_exc()
+            with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                f.write(f'{er}\n\ntime: {time.time()}')
 
 if __name__ == '__main__':
     main()

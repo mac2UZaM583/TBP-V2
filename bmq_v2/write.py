@@ -7,17 +7,18 @@ from bmq_v2.read import get_roundQty
 from datetime import datetime
 from decimal import Decimal as D
 import traceback
+from pprint import pprint
 
 '''ORDERS ↓
 '''
 def cancel_position():
-    position = session.get_positions(category='linear', settleCoin='USDT')['result']['list'][-1]
-    side = 'Buy' if position['side'] == 'Sell' else 'Sell'
+    order = session.get_order_history(category='linear')['result']['list'][0]
+    side = 'Buy' if order['side'] == 'Sell' else 'Sell'
     session.place_order(category='linear',
-                        symbol=position['symbol'],
+                        symbol=order['symbol'],
                         side=side,
                         orderType='Market',
-                        qty=position['size'],
+                        qty=order['qty'],
                         reduceOnly=True)
 
 def orders_clear(orders_tp):
