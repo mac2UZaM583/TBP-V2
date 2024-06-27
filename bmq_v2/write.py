@@ -75,13 +75,12 @@ def TP(position, orders_limit_num, tp):
     tp_price = str(round(avg_price + ((avg_price * tp[-(orders_limit_num + 1)] * (-1 if side == 'Sell' else 1))), round_qty[0])).rstrip('0')
     print(tp_price, tp_position, tp_position == tp_price)
     if tp_position != tp_price:
-        if tp_position != tp_price:
-            try:
-                session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', takeProfit=tp_price, positionIdx=0)
-            except:
-                with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
-                    f.write(f'Ошибка в TP: \nВремя: {datetime.now()}\nДанные: TPPOS: {tp_position}, TPPR: {tp_price}\n{traceback.format_exc()}')
-                cancel_position()
+        try:
+            session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', takeProfit=tp_price, positionIdx=0)
+        except:
+            with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                f.write(f'Ошибка в TP: \nВремя: {datetime.now()}\nДанные: TPPOS: {tp_position}, TPPR: {tp_price}\n{traceback.format_exc()}')
+            cancel_position()
 
 def SL(position, orders_limit, sl):
     symbol = position['symbol']
