@@ -115,7 +115,7 @@ def get_last_price(symbol):
 
 def get_roundQty(symbol):
     data_minroundQty = session.get_instruments_info(category='linear', symbol=symbol)['result']['list'][0]['lotSizeFilter']['minOrderQty']
-    data_minroundPrice = session.get_instruments_info(category='linear', symbol='BTCUSDT')['result']['list'][0]['priceFilter']['minPrice'].rstrip('0')
+    data_minroundPrice = session.get_instruments_info(category='linear', symbol=symbol)['result']['list'][0]['priceFilter']['minPrice'].rstrip('0')
     roundForQty = (len(data_minroundQty) - 2) if D(data_minroundQty) < 1 else 0
     roundForTPSL = (len(data_minroundPrice) - 2) if D(data_minroundPrice) < 1 else len(data_minroundPrice)
     return roundForTPSL, roundForQty
