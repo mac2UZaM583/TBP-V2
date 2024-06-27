@@ -40,9 +40,9 @@ def place_order_limit(symbol, side, qty, price, i=None):
         with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
             f.write(f'Ошибка в выставлении {i} лимитного ордера: \n{er}\n Время: {datetime.now()}')
 
-def place_orders_limit(symbol, side, qty, round_qty):
+def place_orders_limit(symbol, side, qty, round_qty, percent_price):
     avg_position_price = D(session.get_positions(category='linear', settleCoin='USDT')['result']['list'][-1]['avgPrice'])
-    radius_price = avg_position_price * D(0.03)
+    radius_price = avg_position_price * percent_price
     for i in range(1, 5):
         price = round(avg_position_price + (radius_price * (i if side == 'Sell' else -i)), round_qty[0])
         place_order_limit(symbol=symbol, side=side, qty=qty, price=price, i=i+1)
@@ -70,8 +70,8 @@ def TP(position, orders_limit_num, tp):
     side = position['side']
     avg_price = D(position['avgPrice'])
     round_qty = get_roundQty(symbol)
-    tp_position = position['takeProfit']
-    tp_price = str(round(avg_price + ((avg_price * tp[-(orders_limit_num + 1)] * (-1 if side == 'Sell' else 1))), round_qty[0]))
+    tp_position = position['takeProfit'].rstrip('0')
+    tp_price = str(round(avg_price + ((avg_price * tp[-(orders_limit_num + 1)] * (-1 if side == 'Sell' else 1))), round_qty[0])).rstrip('0')
     print(tp_price, tp_position, tp_position == tp_price)
     if tp_position != tp_price:
         if tp_position != tp_price:
@@ -87,8 +87,8 @@ def SL(position, orders_limit, sl):
     side = position['side']
     avg_price = D(session.get_positions(category='linear', settleCoin='USDT')['result']['list'][-1]['avgPrice'])
     round_qty = get_roundQty(symbol)
-    sl_price = str(round(avg_price + ((avg_price * sl * (1 if side == 'Sell' else -1))), round_qty[0]))
-    sl_position_price = position['stopLoss']
+    sl_position_price = position['stopLoss'].rstrip('0')
+    sl_price = str(round(avg_price + ((avg_price * sl * (1 if side == 'Sell' else -1))), round_qty[0])).rstrip('0')
     if sl_position_price != sl_price and not orders_limit:
         try:
             session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', stopLoss=sl_price, positionIdx=0)

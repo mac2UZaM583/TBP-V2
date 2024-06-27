@@ -23,8 +23,9 @@ import time
 import traceback
 
 print(f'\n\nSTART\n\n')
-tp = [D(0.012), D(0.007), D(0.0048), D(0.0036), D(0.003)]
-sl = D(0.070)
+tp = [D(0.006), D(0.003), D(0.002), D(0.0015), D(0.001)]
+sl = D(0.015)
+limit_percent_price = D(0.01)
 
 '''PRE ↓
 '''
@@ -63,7 +64,7 @@ def pre_main2(signal, positions):
             mark_price = gl(signal[0])
             qty = round(balanceWL / mark_price, roundQty[1])
             po(symbol=signal[0], side=side, qty=qty)   
-            pol(symbol=signal[0], side=side, qty=qty, round_qty=roundQty)
+            pol(symbol=signal[0], side=side, qty=qty, round_qty=roundQty, percent_price=limit_percent_price)
 
 def main():
     while True:
@@ -75,7 +76,7 @@ def main():
             '''POST ↓
             '''
             pre_main2(signal=signal, positions=positions)
-        except Exception:
+        except:
             traceback.print_exc()
 
 if __name__ == '__main__':
