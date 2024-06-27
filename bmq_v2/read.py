@@ -7,6 +7,7 @@ import numpy as np
 from decimal import Decimal as D
 from datetime import datetime
 import time
+from pprint import pprint
 
 '''VALIDATE ↓
 '''
@@ -114,7 +115,7 @@ def get_last_price(symbol):
 
 def get_roundQty(symbol):
     data_minroundQty = session.get_instruments_info(category='linear', symbol=symbol)['result']['list'][0]['lotSizeFilter']['minOrderQty']
-    data_minroundPrice = session.get_instruments_info(category='linear', symbol=symbol)['result']['list'][0]['priceFilter']['minPrice']
+    data_minroundPrice = str(float(session.get_instruments_info(category='linear', symbol='BTCUSDT')['result']['list'][0]['priceFilter']['minPrice']))
     roundForQty = (len(data_minroundQty) - 2) if D(data_minroundQty) < 1 else 0
     roundForTPSL = (len(data_minroundPrice) - 2) if D(data_minroundPrice) < 1 else len(data_minroundPrice)
     return roundForTPSL, roundForQty
@@ -126,13 +127,7 @@ def get_avg_position_price():
 '''
 def orders_distribution(orders):
     orders_limit = []
-    orders_tp = []
-    orders_sl = []
     for order in orders:
         if order['orderType'] == 'Limit':
             orders_limit.append(order)
-        if order['createType'] == 'CreateByTakeProfit':
-            orders_tp.append(order)
-        if order['createType'] == 'CreateByTakeProfit':
-            orders_sl.append(order)
-    return orders_limit, orders_tp, orders_sl
+    return orders_limit
