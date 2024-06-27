@@ -40,6 +40,13 @@ def place_order_limit(symbol, side, qty, price, i=None):
         with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
             f.write(f'Ошибка в выставлении {i} лимитного ордера: \n{er}\n Время: {datetime.now()}')
 
+def place_orders_limit(symbol, side, qty, round_qty):
+    avg_position_price = D(session.get_positions(category='linear', settleCoin='USDT')['result']['list'][-1]['avgPrice'])
+    radius_price = avg_position_price * D(0.03)
+    for i in range(1, 5):
+        price = round(avg_position_price + (radius_price * (i if side == 'Sell' else -i)), round_qty[0])
+        place_order_limit(symbol=symbol, side=side, qty=qty, price=price, i=i+1)
+
 '''POSITION ↓
 '''
 def place_order(symbol, side, qty):
@@ -53,8 +60,8 @@ def place_order(symbol, side, qty):
             isLeverage=10,
             tpTriggerBy='LastPrice', slTriggerBy='LastPrice'
         )
-    except Exception as er:
-        print(er)
+    except:
+        er = traceback.format_exc()
         with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
             f.write(f'Ошибка в Place Order: \nВремя: {datetime.now()}\n{er}')
 

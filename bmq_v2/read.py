@@ -41,7 +41,13 @@ def kline_check(kline_old, symbol, i):
         if kline_old[0] != kline_new[0]:
             return get_kline(symbol=symbol, interval=1, limit=2)
         
-def kline_verificate(side, kline, kline_radius, close_open_radius, s_global, s_local, r_global, r_local, s_mark_price, r_mark_price, mark_price, round_qty):
+def kline_verificate(symbol, side, round_qty, kline):
+    s_global, r_global, s_local, r_local = getSR(symbol, round_qty)
+    mark_price = get_last_price(symbol)
+    s_mark_price = round(mark_price - ((mark_price / 100) * D(1.5)), round_qty[0])
+    r_mark_price = round(mark_price + ((mark_price / 100) * D(1.5)), round_qty[0])
+    kline_radius = D(kline[2]) - D(kline[3])
+    close_open_radius = D(kline[4]) - D(kline[3])
     if side == 'Sell':
         ThresholdRadiusSell = round(kline_radius - (kline_radius * D(60 / 100)), round_qty[0])
         if (D(kline[1]) > D(kline[4])) and (close_open_radius < ThresholdRadiusSell) and (s_mark_price > s_global or s_mark_price > s_local):
@@ -80,20 +86,10 @@ def kline_validate(symbol, side, roundQty, timeNow):
         print('Run completed^')
         
         # DEFINITION OF VALIDITY
-        SGlobal, RGlobal, SLocal, RLocal = getSR(symbol, roundQty)
-        markPrice = get_last_price(symbol)
-        markPriceS = round(markPrice - ((markPrice / 100) * D(1.5)), roundQty[0])
-        markPriceR = round(markPrice + ((markPrice / 100) * D(1.5)), roundQty[0])
-        klineRadius = D(kline_check1[2]) - D(kline_check1[3])
-        CloseOpenRadius = D(kline_check1[4]) - D(kline_check1[3])
-        side = kline_verificate(side=side, 
-                                kline=kline_check1, 
-                                kline_radius=klineRadius, 
-                                close_open_radius=CloseOpenRadius, 
-                                s_global=SGlobal, s_local=SLocal, 
-                                r_global=RGlobal, r_local=RLocal, 
-                                s_mark_price=markPriceS, r_mark_price=markPriceR, 
-                                mark_price=markPrice, round_qty=roundQty)
+        side = kline_verificate(symbol=symbol,
+                                side=side,
+                                kline=kline_check1,
+                                round_qty=roundQty) 
         if side != None:
             return side
 

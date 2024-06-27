@@ -13,7 +13,7 @@ from bmq_v2.read import (
 )
 from bmq_v2.write import (
     switch_margin_mode as smm, 
-    place_order_limit as pol, 
+    place_orders_limit as pol, 
     place_order as po, 
     TP,
     SL
@@ -51,16 +51,6 @@ def pre_main1():
 
 '''POST ↓
 '''
-def ppre_main1(signal, side, qty, roundQty):
-    avg_position_price = D(session.get_positions(category='linear', settleCoin='USDT')['result']['list'][-1]['avgPrice'])
-    radius_price = avg_position_price * D(0.03)
-    for i in range(1, 5):
-        price = round(avg_position_price + (radius_price * (i if side == 'Sell' else -i)), roundQty[0])
-        pol(symbol=signal[0], side=side, qty=qty, price=price, i=i+1)
-    return avg_position_price, radius_price
-
-'''PRE/POSITION ↓
-'''
 def pre_main2(signal, positions):
     timeNow = int(time.time())
     balanceWL = gb()
@@ -73,16 +63,16 @@ def pre_main2(signal, positions):
             mark_price = gl(signal[0])
             qty = round(balanceWL / mark_price, roundQty[1])
             po(symbol=signal[0], side=side, qty=qty)   
-            ppre_main1(signal=signal, side=side, qty=qty, roundQty=roundQty)
+            pol(symbol=signal[0], side=side, qty=qty, round_qty=roundQty)
 
 def main():
     while True:
         try:
-            '''PRE POSITION ↓
+            '''PRE ↓
             '''
             signal, positions = pre_main1()
             
-            '''POSITION ↓
+            '''POST ↓
             '''
             pre_main2(signal=signal, positions=positions)
         except Exception:
