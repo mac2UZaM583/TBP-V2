@@ -71,7 +71,8 @@ def TP(position, orders_limit_num, tp):
             try:
                 session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', takeProfit=tp_price, positionIdx=0)
             except:
-                traceback.print_exc()
+                with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                    f.write(f'Ошибка в TP: \nВремя: {datetime.now()}\nДанные: TPPOS: {tp_position}, TPPR: {tp_price}\n{traceback.format_exc()}')
                 cancel_position()
 
 def SL(position, orders_limit, sl):
@@ -85,7 +86,8 @@ def SL(position, orders_limit, sl):
         try:
             session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', stopLoss=sl_price, positionIdx=0)
         except:
-            traceback.print_exc()
+            with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
+                f.write(f'Ошибка в TP: \nВремя: {datetime.now()}\nДанные: SLPOS: {sl_position_price}, SLPR: {sl_price}\n{traceback.format_exc()}')
             cancel_position()
 
 '''MORE ↓
