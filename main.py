@@ -16,8 +16,7 @@ from bmq_v2.write import (
     switch_margin_mode as smm, 
     place_order_limit as pol, 
     place_order as po, 
-    clear_tp as ctp, 
-    TP, 
+    TP,
     SL
 )
 from decimal import Decimal as D
@@ -37,11 +36,9 @@ def pre_main1():
     while True:
         positions = session.get_positions(category='linear', settleCoin='USDT')['result']['list']
         if positions:
-            orders_limit, orders_tp, orders_sl = od(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'])
-            ctp(position=positions[-1], orders_tp=orders_tp, orders_limit_num=len(orders_limit), tp=tp)
-            orders_limit, orders_tp, orders_sl = od(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'])
-            TP(position=positions[-1], orders_tp=orders_tp, orders_limit_num=len(orders_limit), tp=tp)
-            SL(position=positions[-1], orders_sl=orders_sl, orders_limit=orders_limit, sl=sl)
+            orders_limit = od(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'])
+            TP(position=positions[-1], orders_limit_num=len(orders_limit), tp=tp)
+            SL(position=positions[-1], orders_limit=orders_limit, sl=sl)
         else:
             session.cancel_all_orders(category='linear', settleCoin='USDT')
 
