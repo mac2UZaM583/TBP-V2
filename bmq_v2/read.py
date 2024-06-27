@@ -120,9 +120,6 @@ def get_roundQty(symbol):
     roundForTPSL = (len(data_minroundPrice) - 2) if D(data_minroundPrice) < 1 else len(data_minroundPrice)
     return roundForTPSL, roundForQty
 
-def get_avg_position_price():
-    return D(session.get_positions(category='linear', settleCoin='USDT')['result']['list'][-1]['avgPrice'])
-
 '''MORE ↓
 '''
 def orders_distribution(orders):

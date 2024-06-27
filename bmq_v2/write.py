@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from bmq_v2.keys import session
-from bmq_v2.read import get_roundQty, get_avg_position_price
+from bmq_v2.read import get_roundQty
 from datetime import datetime
 from decimal import Decimal as D
 import traceback
@@ -77,7 +77,7 @@ def TP(position, orders_limit_num, tp):
 def SL(position, orders_limit, sl):
     symbol = position['symbol']
     side = position['side']
-    avg_price = get_avg_position_price()
+    avg_price = D(session.get_positions(category='linear', settleCoin='USDT')['result']['list'][-1]['avgPrice'])
     round_qty = get_roundQty(symbol)
     sl_price = str(round(avg_price + ((avg_price * sl * (1 if side == 'Sell' else -1))), round_qty[0]))
     sl_position_price = position['stopLoss']
