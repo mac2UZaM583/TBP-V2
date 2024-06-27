@@ -12,14 +12,17 @@ from pprint import pprint
 '''ORDERS ↓
 '''
 def cancel_position():
-    order = session.get_order_history(category='linear')['result']['list'][0]
-    side = 'Buy' if order['side'] == 'Sell' else 'Sell'
-    session.place_order(category='linear',
-                        symbol=order['symbol'],
-                        side=side,
-                        orderType='Market',
-                        qty=order['qty'],
-                        reduceOnly=True)
+    try:
+        order = session.get_order_history(category='linear')['result']['list'][0]
+        side = 'Buy' if order['side'] == 'Sell' else 'Sell'
+        session.place_order(category='linear',
+                            symbol=order['symbol'],
+                            side=side,
+                            orderType='Market',
+                            qty=order['qty'],
+                            reduceOnly=True)
+    except:
+        traceback.print_exc()
 
 def orders_clear(orders_tp):
     if not orders_tp:
