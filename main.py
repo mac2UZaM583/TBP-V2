@@ -8,7 +8,6 @@ from bmq_v2.read import (
     get_balance as gb, 
     get_roundQty as gr, 
     get_last_price as gl, 
-    get_avg_position_price as gavp, 
     kline_validate as kV, 
     orders_distribution as od
 )
@@ -53,7 +52,7 @@ def pre_main1():
 '''POST ↓
 '''
 def ppre_main1(signal, side, qty, roundQty):
-    avg_position_price = gavp()
+    avg_position_price = D(session.get_positions(category='linear', settleCoin='USDT')['result']['list'][-1]['avgPrice'])
     radius_price = avg_position_price * D(0.03)
     for i in range(1, 5):
         price = round(avg_position_price + (radius_price * (i if side == 'Sell' else -i)), roundQty[0])
