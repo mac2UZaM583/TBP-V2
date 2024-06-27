@@ -14,10 +14,10 @@ def fetch_data():
 
 def validate(data_new, prices_old):
     for price_new in data_new:
-        symbol = price_new['symbol']
+        symbol = price_new['symbol'] if 'USDT' in price_new['symbol'] else None
         if symbol in prices_old:
             percent_change = round(((D(price_new['lastPrice']) - prices_old[symbol]) / prices_old[symbol]) * 100, 2)
-            if abs(percent_change) >= THRESHOLD_PERCENT and abs(percent_change) < LIMIT_PERCENT and 'USDT' in symbol:
+            if abs(percent_change) >= THRESHOLD_PERCENT and abs(percent_change) < LIMIT_PERCENT:
                 with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
                     if percent_change < 0:
                         f.write(f'🔴Ticker: {symbol}\n'
