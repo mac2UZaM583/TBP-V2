@@ -3,7 +3,7 @@ import time
 from decimal import Decimal as D
 from datetime import datetime
 
-THRESHOLD_PERCENT = 0.5
+THRESHOLD_PERCENT = 3
 LIMIT_PERCENT = 8
 session = HTTP()
 

@@ -104,7 +104,7 @@ def kline_validate(symbol, side, roundQty, timeNow):
 '''POSITION ↓
 '''     
 def get_balance():
-    return D(session.get_wallet_balance(accountType='UNIFIED', coin='USDT')['result']['list'][0]['coin'][0]['walletBalance'])
+    return D(session.get_wallet_balance(accountType='CONTRACT', coin='USDT')['result']['list'][0]['coin'][0]['walletBalance'])
     
 def get_last_price(symbol):
     return D(session.get_tickers(category='linear', symbol=symbol)['result']['list'][0]['lastPrice'])
