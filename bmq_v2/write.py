@@ -97,7 +97,7 @@ def SL(position, orders_limit, sl):
             session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', stopLoss=sl_price, positionIdx=0)
         except:
             with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
-                f.write(f'Ошибка в TP: \nВремя: {datetime.now()}\nДанные: SLPOS: {sl_position_price}, SLPR: {sl_price}\n{traceback.format_exc()}')
+                f.write(f'Ошибка в SL: \nВремя: {datetime.now()}\nДанные: SLPOS: {sl_position_price}, SLPR: {sl_price}\n{traceback.format_exc()}')
             cancel_position()
 
 '''MORE ↓
