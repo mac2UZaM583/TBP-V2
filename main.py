@@ -59,7 +59,7 @@ def pre_main2(signal, positions):
     roundQty =  gr(signal[0])
     if not positions:
         session.cancel_all_orders(category="linear", settleCoin='USDT')
-        side = kV(symbol=signal[0], side='Buy' if signal[1] < 0 else 'Sell', roundQty=roundQty, timeNow=timeNow)
+        side = kV(symbol=signal[0], side=signal[1], roundQty=roundQty, timeNow=timeNow)
         if side != None:
             smm(symbol=signal[0])
             mark_price = gl(signal[0])

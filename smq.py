@@ -20,14 +20,16 @@ def validate(data_new, prices_old):
             if abs(percent_change) >= THRESHOLD_PERCENT and abs(percent_change) < LIMIT_PERCENT:
                 with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
                     if percent_change < 0:
+                        side = 'Buy'
                         f.write(f'🔴Ticker: {symbol}\n'
                                 f'Percent: {percent_change}%\n'
                                 f'Datetime: {datetime.now()}')
                     if percent_change > 0:
+                        side = 'Sell'
                         f.write(f'🟢Ticker: {symbol}\n'
                                 f'Percent: {percent_change}%\n'
                                 f'Datetime: {datetime.now()}')
-                return symbol, percent_change
+                return symbol, side
             else:
                 None
 
