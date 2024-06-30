@@ -50,7 +50,7 @@ def kline_verificate(symbol, side, round_qty, kline):
     close_open_radius = D(kline[4]) - D(kline[3])
     if side == 'Sell':
         ThresholdRadiusSell = round(kline_radius - (kline_radius * D(60 / 100)), round_qty[0])
-        if (D(kline[1]) > D(kline[4])) and (close_open_radius < ThresholdRadiusSell) and (s_mark_price > s_global or s_mark_price > s_local):
+        if (D(kline[1]) > D(kline[4])) and (close_open_radius < ThresholdRadiusSell) and (s_mark_price > s_global or s_mark_price > s_local) and (s_mark_price < r_global or s_mark_price < r_local):
             return side
         else:
             with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
@@ -63,7 +63,7 @@ def kline_verificate(symbol, side, round_qty, kline):
             return None
     else:
         ThresholdRadiusBuy = round(kline_radius - (kline_radius * D(40 / 100)), round_qty[0])
-        if (D(kline[1]) < D(kline[4])) and (close_open_radius > ThresholdRadiusBuy) and (r_mark_price < r_global or r_mark_price < r_local):
+        if (D(kline[1]) < D(kline[4])) and (close_open_radius > ThresholdRadiusBuy) and (r_mark_price < r_global or r_mark_price < r_local) and (r_mark_price > s_global or r_mark_price > s_local):
             return side
         else:
             with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
