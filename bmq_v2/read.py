@@ -112,9 +112,11 @@ def get_last_price(symbol):
 def get_roundQty(symbol):
     data_minroundQty = session.get_instruments_info(category='linear', symbol=symbol)['result']['list'][0]['lotSizeFilter']['minOrderQty']
     data_minroundPrice = session.get_instruments_info(category='linear', symbol=symbol)['result']['list'][0]['priceFilter']['minPrice'].rstrip('0')
+    tick_minround_price = session.get_instruments_info(category='linear', symbol=symbol)['result']['list'][0]['priceFilter']['tickSize'].rstrip('0')
     roundForQty = (len(data_minroundQty) - 2) if D(data_minroundQty) < 1 else 0
-    roundForTPSL = (len(data_minroundPrice) - 2) if D(data_minroundPrice) < 1 else len(data_minroundPrice)
-    return roundForTPSL, roundForQty
+    roundForTPSL = (len(data_minroundPrice) - 2) if D(data_minroundPrice) < 1 else 0
+    round_for_tpsl2 = (len(tick_minround_price) - 1) if D(tick_minround_price) < 1 else len(tick_minround_price)
+    return roundForTPSL, roundForQty, round_for_tpsl2
 
 '''MORE ↓
 '''

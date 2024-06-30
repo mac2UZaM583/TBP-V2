@@ -19,7 +19,7 @@ def cancel_position():
                             symbol=order['symbol'],
                             side=side,
                             orderType='Market',
-                            qty=order['qty'],
+                            qty=0,
                             reduceOnly=True)
     except:
         traceback.print_exc()
@@ -75,9 +75,10 @@ def TP(position, orders_limit_num, tp):
     avg_price = D(position['avgPrice'])
     round_qty = get_roundQty(symbol)
     tp_position = position['takeProfit'].rstrip('0')
+    tp_position_comparison = tp_position[:round_qty[2]]
     tp_price = str(round(avg_price + ((avg_price * tp[-(orders_limit_num + 1)] * (-1 if side == 'Sell' else 1))), round_qty[0])).rstrip('0')
-    print(tp_price, tp_position, tp_position == tp_price)
-    if tp_position != tp_price:
+    tp_comparison = tp_price[:round_qty[2]]
+    if tp_position != tp_price and tp_position_comparison != tp_comparison:
         try:
             session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', takeProfit=tp_price, positionIdx=0)
         except:
@@ -91,8 +92,10 @@ def SL(position, orders_limit, sl):
     avg_price = D(session.get_positions(category='linear', settleCoin='USDT')['result']['list'][-1]['avgPrice'])
     round_qty = get_roundQty(symbol)
     sl_position_price = position['stopLoss'].rstrip('0')
+    sl_position_comparison = sl_position_price[:round_qty[2]]
     sl_price = str(round(avg_price + ((avg_price * sl * (1 if side == 'Sell' else -1))), round_qty[0])).rstrip('0')
-    if sl_position_price != sl_price and not orders_limit:
+    sl_comparison = sl_price[:round_qty[2]]
+    if sl_position_price != sl_price and sl_position_comparison != sl_comparison and not orders_limit:
         try:
             session.set_trading_stop(category='linear', symbol=symbol, tpslMode='Full', stopLoss=sl_price, positionIdx=0)
         except:
