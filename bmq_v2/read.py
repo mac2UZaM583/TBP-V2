@@ -80,9 +80,12 @@ def kline_validate(symbol, side, roundQty, timeNow):
     klines1MinTime = get_kline(symbol=symbol, interval=1, limit=1)[0]
     klineCreateTime = int(klines1MinTime[0][:-3])
     
-    if timeNow > klineCreateTime and klines >= 240:
-        kline_check_none = kline_check(symbol=symbol, kline_old=klines1MinTime, i=1)[0]
-        kline_check1 = kline_check(symbol=symbol, kline_old=kline_check_none, i=2)[-1]
+    if klines >= 240:
+        if timeNow > klineCreateTime:
+            print('я прохожу проверку временем')
+            klines1MinTime = kline_check(symbol=symbol, kline_old=klines1MinTime, i=1)[0]
+        print('нужный клайн')
+        kline_check1 = kline_check(symbol=symbol, kline_old=klines1MinTime, i=2)[-1]
         print('Run completed^')
         
         # DEFINITION OF VALIDITY
@@ -96,8 +99,6 @@ def kline_validate(symbol, side, roundQty, timeNow):
     else:
         with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
             f.write(f'BMQ: Ордер не прошел проверку.\n'
-                    f'Время клайна - {klineCreateTime}\n'
-                    f'Время записи - {timeNow}\n'
                     f'Klines: {klines}')
         return None
 
@@ -126,3 +127,8 @@ def orders_distribution(orders):
         if order['orderType'] == 'Limit':
             orders_limit.append(order)
     return orders_limit
+
+if __name__ == '__main__':
+    time_now = time.time()
+    time.sleep(60)
+    kline_validate('ETHUSDT', 'Buy', (1, 1), time_now)
