@@ -24,9 +24,10 @@ import time
 import traceback
 
 print(f'\n\nSTART\n\n')
+data_update = 120
+limit_percent_price = D(0.03)
 tp = [D(0.012), D(0.007), D(0.0048), D(0.0036), D(0.003)]
 sl = D(0.060)
-limit_percent_price = D(0.03)
 
 '''PRE ↓
 '''
@@ -43,7 +44,7 @@ def pre_main1():
         else:
             session.cancel_all_orders(category='linear', settleCoin='USDT')
 
-        if time.time() - start_time >= 60:
+        if time.time() - start_time >= data_update:
             data_old = fetch_data()
             prices_old = {price['symbol']: D(price['lastPrice']) for price in data_old}
             start_time = time.time()
