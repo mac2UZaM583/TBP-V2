@@ -24,10 +24,6 @@ def cancel_position():
     except:
         traceback.print_exc()
 
-def orders_clear(orders_tp):
-    if not orders_tp:
-        session.cancel_all_orders(category="linear", settleCoin='USDT')
-
 def place_order_limit(symbol, side, qty, price, i=None):
     try:
         session.place_order(
