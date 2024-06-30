@@ -82,9 +82,7 @@ def kline_validate(symbol, side, roundQty, timeNow):
     
     if klines >= 240:
         if timeNow > klineCreateTime:
-            print('я прохожу проверку временем')
             klines1MinTime = kline_check(symbol=symbol, kline_old=klines1MinTime, i=1)[0]
-        print('нужный клайн')
         kline_check1 = kline_check(symbol=symbol, kline_old=klines1MinTime, i=2)[-1]
         print('Run completed^')
         
