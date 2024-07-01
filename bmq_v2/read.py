@@ -58,8 +58,8 @@ def kline_verificate(symbol, side, round_qty, kline):
                         f'SGlobal: {s_global}, SLocal: {s_local} ({s_mark_price > s_global or s_mark_price > s_local})\n'
                         f'RGlobal: {r_global}, RLocal: {r_local} ({s_mark_price < r_global or s_mark_price < r_local})\n'
                         f'MarkPriceS: {s_mark_price}, MarkPrice: {mark_price}\n'
-                        f'KlinesOpen: {kline[1]}, KlinesClose: {kline[4]}\n'
-                        f'CloseOpenRadius: {close_open_radius}, ThresholdRadiusSell: {ThresholdRadiusSell}\n'
+                        f'KlinesOpen: {kline[1]}, KlinesClose: {kline[4]} ({D(kline[1]) > D(kline[4])})\n'
+                        f'CloseOpenRadius: {close_open_radius}, ThresholdRadiusSell: {ThresholdRadiusSell} ({close_open_radius < ThresholdRadiusSell})\n'
                         f'Время - {datetime.now()}')
             return None
     else:
@@ -72,8 +72,8 @@ def kline_verificate(symbol, side, round_qty, kline):
                         f'SGlobal: {s_global}, SLocal: {s_local} ({s_mark_price > s_global or s_mark_price > s_local})\n'
                         f'RGlobal: {r_global}, RLocal: {r_local} ({s_mark_price < r_global or s_mark_price < r_local})\n'
                         f'MarkPriceR: {r_mark_price}, MarkPrice: {mark_price}\n'
-                        f'KlinesOpen: {kline[1]}, KlinesClose: {kline[4]}\n'
-                        f'CloseOpenRadius: {close_open_radius}, ThresholdRadiusSell: {ThresholdRadiusBuy}\n'
+                        f'KlinesOpen: {kline[1]}, KlinesClose: {kline[4]} ({D(kline[1]) < D(kline[4])})\n'
+                        f'CloseOpenRadius: {close_open_radius}, ThresholdRadiusSell: {ThresholdRadiusBuy} ({close_open_radius > ThresholdRadiusBuy})\n'
                         f'Время - {datetime.now()}')
             return None
 
