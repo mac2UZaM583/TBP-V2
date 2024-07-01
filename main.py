@@ -23,10 +23,10 @@ from decimal import Decimal as D
 import time
 import traceback
 
-print(f'\n\nSTART\n\n')
+print(f'\n\nSTART-V2\n\n')
 data_update = 120
-limit_percent_price = D(0.03)
-tp = [D(0.012), D(0.007), D(0.0048), D(0.0036), D(0.003)]
+limit_percent_price = D(0.033)
+tp = [D(0.012), D(0.007), D(0.0048), D(0.0036)]
 sl = D(0.060)
 
 '''PRE ↓

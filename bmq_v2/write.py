@@ -43,7 +43,7 @@ def place_order_limit(symbol, side, qty, price, i=None):
 def place_orders_limit(symbol, side, qty, round_qty, percent_price):
     avg_position_price = D(session.get_positions(category='linear', settleCoin='USDT')['result']['list'][-1]['avgPrice'])
     radius_price = avg_position_price * percent_price
-    for i in range(1, 5):
+    for i in range(1, 4):
         price = round(avg_position_price + (radius_price * (i if side == 'Sell' else -i)), round_qty[0])
         place_order_limit(symbol=symbol, side=side, qty=qty, price=price, i=i+1)
 
