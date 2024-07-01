@@ -55,7 +55,8 @@ def kline_verificate(symbol, side, round_qty, kline):
         else:
             with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
                 f.write(f'BMQ: Ордер не прошел проверку.\n'
-                        f'SGlobal: {s_global}, SLocal: {s_local}\n'
+                        f'SGlobal: {s_global}, SLocal: {s_local} ({s_mark_price > s_global or s_mark_price > s_local})\n'
+                        f'RGlobal: {r_global}, RLocal: {r_local} ({s_mark_price < r_global or s_mark_price < r_local})\n'
                         f'MarkPriceS: {s_mark_price}, MarkPrice: {mark_price}\n'
                         f'KlinesOpen: {kline[1]}, KlinesClose: {kline[4]}\n'
                         f'CloseOpenRadius: {close_open_radius}, ThresholdRadiusSell: {ThresholdRadiusSell}\n'
@@ -68,7 +69,8 @@ def kline_verificate(symbol, side, round_qty, kline):
         else:
             with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
                 f.write(f'BMQ: Ордер не прошел проверку.\n'
-                        f'RGlobal: {r_global}, RLocal: {r_local}\n'
+                        f'SGlobal: {s_global}, SLocal: {s_local} ({s_mark_price > s_global or s_mark_price > s_local})\n'
+                        f'RGlobal: {r_global}, RLocal: {r_local} ({s_mark_price < r_global or s_mark_price < r_local})\n'
                         f'MarkPriceR: {r_mark_price}, MarkPrice: {mark_price}\n'
                         f'KlinesOpen: {kline[1]}, KlinesClose: {kline[4]}\n'
                         f'CloseOpenRadius: {close_open_radius}, ThresholdRadiusSell: {ThresholdRadiusBuy}\n'
