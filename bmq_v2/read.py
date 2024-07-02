@@ -44,8 +44,8 @@ def kline_check(kline_old, symbol, i):
 def kline_verificate(symbol, side, round_qty, kline):
     s_global, r_global, s_local, r_local = getSR(symbol, round_qty)
     mark_price = get_last_price(symbol)
-    s_mark_price = round(mark_price - ((mark_price / 100) * D(1.5)), round_qty[0])
-    r_mark_price = round(mark_price + ((mark_price / 100) * D(1.5)), round_qty[0])
+    s_mark_price = round(mark_price - ((mark_price / 100) * D(2)), round_qty[0])
+    r_mark_price = round(mark_price + ((mark_price / 100) * D(2)), round_qty[0])
     kline_radius = D(kline[2]) - D(kline[3])
     close_open_radius = D(kline[4]) - D(kline[3])
     if side == 'Sell':
