@@ -26,7 +26,7 @@ import traceback
 print(f'\n\nSTART-V2\n\n')
 data_update = 120
 limit_percent_price = D(0.033)
-tp = [D(0.012), D(0.007), D(0.0048), D(0.0036)]
+tp = [D(0.0131), D(0.0076), D(0.0052), D(0.0039)]
 sl = D(0.060)
 
 '''PRE ↓
