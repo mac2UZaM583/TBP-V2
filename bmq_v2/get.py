@@ -16,19 +16,13 @@ def getSR(symbol, roundQty):
     klines = session.get_kline(symbol=symbol, category='linear', interval='60', limit=360)['result']['list']
     closes = np.unique(np.array([float(kline[4]) for kline in klines]))
     lowestGlobal = np.sort(closes)[::5]
-    lowestLocal = np.sort(closes)[:100:3]
     valuesGlobal = np.diff(lowestGlobal)
-    valuesLocal = np.diff(lowestLocal)
     valueMaxGlobal = np.round(np.max(valuesGlobal), roundQty[0])
-    valueMaxLocal = np.round(np.max(valuesLocal), roundQty[0])
 
     # SPLITTING VALUES
     split_indexGlobal = np.argmax(np.round(valuesGlobal, roundQty[0]) == valueMaxGlobal) + 1
-    split_indexLocal = np.argmax(np.round(valuesLocal, roundQty[0]) == valueMaxLocal) + 1
     support_levelGlobal = np.round(np.mean(lowestGlobal[:split_indexGlobal]), roundQty[0])
     resistance_levelGlobal = np.round(np.mean(lowestGlobal[split_indexGlobal:]), roundQty[0])
-    support_levelLocal = np.round(np.mean(lowestLocal[:split_indexLocal]), roundQty[0])
-    resistance_levelLocal = np.round(np.mean(lowestLocal[split_indexLocal:]), roundQty[0])
     return support_levelGlobal, resistance_levelGlobal
 
 def get_kline(symbol, interval, limit):
