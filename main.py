@@ -65,6 +65,8 @@ async def main():
                     time_percent = int(int(time.time()) * 1000)
                     break
             
+            '''SET ⭣
+            '''
             if percent_change and not positions:
                 symbol, changes = percent_change
                 side_non_validated = 'Buy' if changes < 0 else 'Sell'
