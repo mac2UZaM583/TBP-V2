@@ -71,7 +71,6 @@ async def main():
                 symbol, changes = percent_change
                 side_non_validated = 'Buy' if changes < 0 else 'Sell'
                 side = g_side_validated(symbol, side_non_validated, time_percent)
-                side = side_non_validated
                 if side:
                     round_qty, price, balance = await g_data(symbol)
                     qty = ((balance / price) * 0.011) * leverage
