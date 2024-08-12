@@ -1,88 +1,95 @@
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from set import *
+from get import *
+from session import session
+from settings__ import files_content
 
-from smq import smq, fetch_data
-from bmq_v2.keys import session
-from bmq_v2.read import (
-    get_balance as gb, 
-    get_roundQty as gr, 
-    get_last_price as gl, 
-    kline_validate as kV, 
-    orders_distribution as od,
-)
-from bmq_v2.write import (
-    switch_margin_mode as smm, 
-    place_orders_limit as pol, 
-    place_order as po, 
-    TP,
-    SL,
-    cancel_position
-)
-from decimal import Decimal as D
+import asyncio
 import time
-import traceback
+from pprint import pprint
 
-print(f'\n\nSTART-V2\n\n')
-data_update = 120
-limit_percent_price = D(0.033)
-tp = [D(0.017), D(0.0076), D(0.0052), D(0.0039)]
-sl = D(0.060)
+leverage = int(files_content['LEVERAGE'])
+averaging_qty = int(files_content['AVERAGING_QTY'])
 
-'''PRE ↓
-'''
-def pre_main1():
-    data_old = fetch_data()
-    prices_old = {price['symbol']: D(price['lastPrice']) for price in data_old}
-    start_time = time.time()
-    while True:
-        positions = session.get_positions(category='linear', settleCoin='USDT')['result']['list']
-        if positions:
-            orders_limit = od(session.get_open_orders(category='linear', settleCoin='USDT')['result']['list'])
-            TP(position=positions[-1], orders_limit_num=len(orders_limit), tp=tp)
-            SL(position=positions[-1], orders_limit=orders_limit, sl=sl)
-        else:
-            session.cancel_all_orders(category='linear', settleCoin='USDT')
-
-        if time.time() - start_time >= data_update:
-            data_old = fetch_data()
-            prices_old = {price['symbol']: D(price['lastPrice']) for price in data_old}
-            start_time = time.time()
-        signal = smq(prices_old=prices_old)
-        if signal != None:
-            return signal, positions
-
-'''POST ↓
-'''
-def pre_main2(signal, positions):
-    timeNow = int(time.time())
-    balanceWL = gb()
-    roundQty =  gr(signal[0])
-    if not positions:
-        session.cancel_all_orders(category="linear", settleCoin='USDT')
-        side = kV(symbol=signal[0], side=signal[1], roundQty=roundQty, timeNow=timeNow)
-        if side != None:
-            smm(symbol=signal[0])
-            mark_price = gl(signal[0])
-            qty = round(balanceWL / mark_price, roundQty[1])
-            po(symbol=signal[0], side=side, qty=qty)   
-            pol(symbol=signal[0], side=side, qty=qty, round_qty=roundQty, percent_price=limit_percent_price)
-
-def main():
+async def main():
     while True:
         try:
-            '''PRE ↓
-            '''
-            signal, positions = pre_main1()
-            
-            '''POST ↓
-            '''
-            pre_main2(signal=signal, positions=positions)
+            start = time.time()
+            percent_changes_old = g_last_prices()
+            print('cycle now')
+            while time.time() - start < float(files_content['CYCLE_UPDATE']):
+                positions, limits_num = await asyncio.gather(
+                    asyncio.to_thread(lambda: tuple(session.get_positions(
+                        category='linear', 
+                        settleCoin='USDT'
+                    )['result']['list'])),
+                    asyncio.to_thread(lambda: len(tuple(filter(
+                        lambda v: v['orderType'] == 'Limit', 
+                        session.get_open_orders(
+                            category='linear',
+                            settleCoin='USDT'
+                        )['result']['list']
+                    ))))
+                )
+                if positions:
+                    position = positions[0]
+                    symbol = position['symbol']
+                    round = await g_round_qty(symbol)
+                    round_price = round[1]
+                    await asyncio.gather(
+                        s_tp(
+                            np.array((0.025, 0.007, *np.full(averaging_qty - 2, 0.02))),
+                            position['takeProfit'],
+                            position['side'],
+                            round_price,
+                            float(position['avgPrice']),
+                            limits_num,
+                            symbol
+                        ),
+                        s_sl(
+                            0.5,
+                            position['stopLoss'],
+                            position['side'],
+                            round_price,
+                            float(position['avgPrice']),
+                            limits_num,
+                            symbol
+                        )
+                    )
+
+                global percent_change
+                percent_change = g_percent_change(*percent_changes_old)
+                if percent_change:
+                    print(percent_change)
+                    time_percent = int(int(time.time()) * 1000)
+                    break
+
+            if not positions:
+                print('//////')
+                symbol, changes = percent_change
+                side_non_validated = 'Buy' if changes < 0 else 'Sell'
+                side = g_side_validated(symbol, side_non_validated, time_percent)
+                side = side_non_validated
+                if side:
+                    round_qty, price, balance = await g_data(symbol)
+                    qty = ((balance / price) * 0.011) * leverage
+                    await place_order(
+                        symbol, 
+                        s_round(qty, round_qty[0]),
+                        side
+                    ),
+                    await place_orders_limits(
+                        symbol, 
+                        price,
+                        (0.04, *np.arange(1, averaging_qty) * 0.08),
+                        qty,
+                        float(files_content['VOLUME_MULTIPLIER']),
+                        round_qty,
+                        side
+                    )
         except:
-            cancel_position()
-            er = traceback.format_exc()
-            with open('/CODE_PROJECTS/SMQ-N & Python/signal.txt', 'w', encoding='utf-8') as f:
-                f.write(f'{er}\n\ntime: {time.time()}')
+            s_cancel_position()
+            traceback.print_exc()
 
 if __name__ == '__main__':
-    main()
+    s_pre_main()
+    asyncio.run(main()) #⭠⭡⭢⭣⭤ ⭥⮂⮃
