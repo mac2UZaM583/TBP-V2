@@ -5,18 +5,20 @@ from settings__ import files_content
 
 import asyncio
 import time
+from itertools import count
 from pprint import pprint
 
 leverage = int(files_content['LEVERAGE'])
 averaging_qty = int(files_content['AVERAGING_QTY'])
+count_ = count(0, 1)
 
 async def main():
     while True:
         try:
             start = time.time()
             percent_changes_old = g_last_prices()
-            print('cycle now')
             while time.time() - start < float(files_content['CYCLE_UPDATE']):
+                print(f'cycle {next(count_)}')
                 positions, limits_num = await asyncio.gather(
                     asyncio.to_thread(lambda: tuple(session.get_positions(
                         category='linear', 
@@ -62,9 +64,8 @@ async def main():
                     print(percent_change)
                     time_percent = int(int(time.time()) * 1000)
                     break
-
-            if not positions:
-                print('//////')
+            
+            if percent_change and not positions:
                 symbol, changes = percent_change
                 side_non_validated = 'Buy' if changes < 0 else 'Sell'
                 side = g_side_validated(symbol, side_non_validated, time_percent)
@@ -91,5 +92,5 @@ async def main():
             traceback.print_exc()
 
 if __name__ == '__main__':
-    s_pre_main()
+    # s_pre_main()
     asyncio.run(main()) #⭠⭡⭢⭣⭤ ⭥⮂⮃

@@ -1,8 +1,6 @@
 from session import session
 from settings__ import files_content
 
-import asyncio
-from math import factorial
 import traceback
 from pprint import pprint
 
