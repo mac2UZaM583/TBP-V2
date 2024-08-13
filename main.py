@@ -47,7 +47,7 @@ async def main():
                             symbol
                         ),
                         s_sl(
-                            0.5,
+                            float(files_content['STOP_LOSS']),
                             position['stopLoss'],
                             position['side'],
                             round_price,
