@@ -6,24 +6,26 @@ from settings__ import files_content
 
 import numpy as np
 import asyncio
-from pprint import pprint
 
 def g_last_prices():
     def s_unpacking_data(data):
+        def if_(v):
+            symbol = v['symbol']
+            return (
+                'USDT' in symbol and 
+                'USDC' not in symbol and 
+                v['curPreListingPhase'] == ''
+            )
         return (
             np.array(tuple(
                 info['symbol'] 
                 for info in data 
-                if 'USDT' in info['symbol'] and 
-                'USDC' not in info['symbol'] and
-                info['curPreListingPhase'] == ''
+                if if_(info)
             )),
             np.array(tuple(
                 float(info['lastPrice']) 
                 for info in data 
-                if 'USDT' in info['symbol'] and 
-                'USDC' not in info['symbol'] and
-                info['curPreListingPhase'] == ''
+                if if_(info)
             ))
         )
     
@@ -143,5 +145,13 @@ def g_side_validated(symbol, side, time):
         print('side_validate ⭢ non verified')
         
 if __name__ == '__main__':
-    pprint(session_.get_tickers(category='linear', symbol='ETHUSDT')['result'])
+    import time
+    
+    while True:
+        start = time.time()
+        percent_changes_old = g_last_prices()
+        while time.time() - start < float(files_content['CYCLE_UPDATE']):
+            res = g_percent_change(*percent_changes_old)
+            print(res)
+            break
 
