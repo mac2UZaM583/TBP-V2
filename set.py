@@ -1,9 +1,8 @@
 from session import session
-from settings__ import files_content
 from notifications import s_send_n
+from settings__ import files_content
 
 import traceback
-from pprint import pprint
 
 def s_round(value, round):
     if value != '':
@@ -28,8 +27,10 @@ def s_cancel_position():
             qty=0
         )
     except:
-        # traceback.print_exc()
-        pass
+        s_send_n(
+            f'!!! TRACEBACK::\n\n'
+            f'{traceback.format_exc()}'
+        )
 
 async def s_tp(
     tp_arr, 
@@ -54,7 +55,10 @@ async def s_tp(
                 positionIdx=0
             )
         except:
-            traceback.print_exc()
+            s_send_n(
+                f'TRACEBACK::\n\n'
+                f'{traceback.format_exc()}'
+            )
 
 async def s_sl(
     sl,
@@ -102,14 +106,14 @@ async def s_sl(
             )
 
 async def place_order(symbol, qty, side):
-    pprint(session.place_order(
+    session.place_order(
         category='linear',
         symbol=symbol,
         qty=qty, 
         marketUnit='baseCoin',
         side=side,
         orderType='Market'
-    ))
+    )
 
 async def place_orders_limits(
     symbol, 
@@ -120,23 +124,30 @@ async def place_orders_limits(
     round,
     side
 ):
-    pprint(session.place_batch_order(
-        category='linear',
-        request=[
-            {
-                'symbol': symbol,
-                'qty': s_round(volume_multiplier ** (i + 1) * qty, round[0]), 
-                'marketUnit': 'baseCoin',
-                'side': side,
-                'orderType': 'Limit',
-                'price': s_round(
-                    ((price * limit_price_changes[i]) * (1 if side == 'Sell' else -1)) + price, 
-                    round[1]
-                )
-            }
-            for i in range(int(files_content['AVERAGING_QTY']))
-        ]
-    ))
+    try:
+        session.place_batch_order(
+            category='linear',
+            request=[
+                {
+                    'symbol': symbol,
+                    'qty': s_round(volume_multiplier ** (i + 1) * qty, round[0]), 
+                    'marketUnit': 'baseCoin',
+                    'side': side,
+                    'orderType': 'Limit',
+                    'price': s_round(
+                        ((price * limit_price_changes[i]) * (1 if side == 'Sell' else -1)) + price, 
+                        round[1]
+                    )
+                }
+                for i in range(int(files_content['AVERAGING_QTY']))
+            ]
+        )
+    except:
+        s_cancel_position()
+        s_send_n(
+            f'TRACEBACK::\n\n'
+            f'{traceback.format_exc()}'
+        )
 
 def s_pre_main():
     s_cancel_position()

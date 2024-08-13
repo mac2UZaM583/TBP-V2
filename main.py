@@ -1,7 +1,7 @@
 from set import *
 from get import *
-from session import session
 from settings__ import files_content
+from session import session
 from notifications import s_send_n
 
 import asyncio
@@ -9,9 +9,7 @@ import time
 import traceback
 from datetime import datetime
 from itertools import count
-from pprint import pprint
 
-leverage = int(files_content['LEVERAGE'])
 averaging_qty = int(files_content['AVERAGING_QTY'])
 count_ = count(0, 1)
 
@@ -57,7 +55,7 @@ async def main():
                             symbol
                         )
                     )
-                elif positions is not None and positions == []:
+                elif positions == []:
                     session.cancel_all_orders(category='linear', settleCoin='USDT')
 
                 global percent_change
@@ -73,27 +71,29 @@ async def main():
             
             '''SET ⭣
             '''
-            if percent_change and positions is not None and positions == []:
+            if percent_change and positions == []:
                 symbol, changes = percent_change
-                side_non_validated = 'Buy' if changes < 0 else 'Sell'
                 # side = 'Buy' if changes < 0 else 'Sell'
+                side_non_validated = 'Buy' if changes < 0 else 'Sell'
                 side = g_side_validated(symbol, side_non_validated, time_percent)
                 if side:
                     round_qty, price, balance = await g_data(symbol)
-                    qty = ((balance / price) * 0.011) * leverage
-                    await place_order(
-                        symbol, 
-                        s_round(qty, round_qty[0]),
-                        side
-                    ),
-                    await place_orders_limits(
-                        symbol, 
-                        price,
-                        (0.04, *np.arange(1, averaging_qty) * 0.08),
-                        qty,
-                        float(files_content['VOLUME_MULTIPLIER']),
-                        round_qty,
-                        side
+                    qty = ((balance / price) * 0.011) * int(files_content['LEVERAGE'])
+                    await asyncio.gather(
+                        place_order(
+                            symbol, 
+                            s_round(qty, round_qty[0]),
+                            side
+                        ),
+                        place_orders_limits(
+                            symbol, 
+                            price,
+                            (0.04, *np.arange(1, averaging_qty) * 0.08),
+                            qty,
+                            float(files_content['VOLUME_MULTIPLIER']),
+                            round_qty,
+                            side
+                        )
                     )
         except:
             s_send_n(
