@@ -2,12 +2,13 @@ from set import *
 from get import *
 from session import session
 from settings__ import files_content
-from notifications import send_n
+from notifications import s_send_n
 
 import asyncio
 import time
-from itertools import count
 import traceback
+from datetime import datetime
+from itertools import count
 from pprint import pprint
 
 leverage = int(files_content['LEVERAGE'])
@@ -62,7 +63,11 @@ async def main():
                 global percent_change
                 percent_change = g_percent_change(*percent_changes_old)
                 if percent_change:
-                    print(percent_change)
+                    s_send_n(
+                        f'PC::\n\n'
+                        f'{percent_change[0]}, {percent_change[1] * 100}%\n'
+                        f'{datetime.now()}'
+                    )
                     time_percent = int(int(time.time()) * 1000)
                     break
             
@@ -93,7 +98,10 @@ async def main():
         except:
             traceback.print_exc()
             s_cancel_position()
-            send_n(traceback.format_exc())
+            s_send_n(
+                f'TRACEBACK::\n\n'
+                f'{traceback.format_exc()}'
+            )
 
 if __name__ == '__main__':
     # s_pre_main()

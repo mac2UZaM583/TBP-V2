@@ -1,6 +1,6 @@
 from session import session
 from settings__ import files_content
-from notifications import log_decorator
+from notifications import s_send_n
 
 import traceback
 from pprint import pprint
@@ -81,7 +81,10 @@ async def s_sl(
                     positionIdx=0
                 )
             except:
-                traceback.print_exc()
+                s_send_n(
+                    f'TRACEBACK::\n\n'
+                    f'{traceback.format_exc()}'
+                )
     elif sl_price_position != '':
         try:
             session.set_trading_stop(
@@ -92,7 +95,10 @@ async def s_sl(
                 positionIdx=0
             )
         except:
-            traceback.print_exc()
+            s_send_n(
+                f'TRACEBACK::\n\n'
+                f'{traceback.format_exc()}'
+            )
 
 async def place_order(symbol, qty, side):
     pprint(session.place_order(
