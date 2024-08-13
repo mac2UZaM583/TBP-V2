@@ -96,12 +96,7 @@ async def main():
                         side
                     )
         except:
-            traceback.print_exc()
-            s_cancel_position()
-            s_send_n(
-                f'TRACEBACK::\n\n'
-                f'{traceback.format_exc()}'
-            )
+            pass
 
 if __name__ == '__main__':
     # s_pre_main()

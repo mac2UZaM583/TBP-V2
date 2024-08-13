@@ -81,6 +81,7 @@ async def s_sl(
                     positionIdx=0
                 )
             except:
+                s_cancel_position()
                 s_send_n(
                     f'TRACEBACK::\n\n'
                     f'{traceback.format_exc()}'
