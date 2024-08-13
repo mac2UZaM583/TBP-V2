@@ -1,7 +1,4 @@
-from session import (
-    session_, 
-    session
-)
+from session import *
 from settings__ import files_content
 
 import numpy as np
