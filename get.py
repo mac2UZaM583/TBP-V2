@@ -6,25 +6,16 @@ import asyncio
 
 def g_last_prices():
     def s_unpacking_data(data):
-        def if_(v):
-            symbol = v['symbol']
-            return (
-                'USDT' in symbol and 
-                'USDC' not in symbol and 
-                v['curPreListingPhase'] == ''
+        res = tuple(zip(*(
+            (info['symbol'], float(info['lastPrice']))
+            for info in data 
+            if (
+                'USDT' in info['symbol'] and 
+                'USDC' not in info['symbol'] and 
+                info['curPreListingPhase'] == ''
             )
-        return (
-            np.array(tuple(
-                info['symbol'] 
-                for info in data 
-                if if_(info)
-            )),
-            np.array(tuple(
-                float(info['lastPrice']) 
-                for info in data 
-                if if_(info)
-            ))
-        )
+        )))
+        return np.array(res[0]), np.float64(res[1])
     
     return s_unpacking_data(
         np.array(session_.get_tickers(
@@ -143,6 +134,7 @@ def g_side_validated(symbol, side, time):
         
 if __name__ == '__main__':
     import time
+    from pprint import pprint
     
     while True:
         start = time.time()
