@@ -2,10 +2,12 @@ from set import *
 from get import *
 from session import session
 from settings__ import files_content
+from notifications import send_n
 
 import asyncio
 import time
 from itertools import count
+import traceback
 from pprint import pprint
 
 leverage = int(files_content['LEVERAGE'])
@@ -20,10 +22,7 @@ async def main():
             while time.time() - start < float(files_content['CYCLE_UPDATE']):
                 print(f'cycle {next(count_)}')
                 positions, limits_num = await asyncio.gather(
-                    asyncio.to_thread(lambda: tuple(session.get_positions(
-                        category='linear', 
-                        settleCoin='USDT'
-                    )['result']['list'])),
+                    g_positions(),
                     asyncio.to_thread(lambda: len(tuple(filter(
                         lambda v: v['orderType'] == 'Limit', 
                         session.get_open_orders(
@@ -57,6 +56,8 @@ async def main():
                             symbol
                         )
                     )
+                elif positions is not None and positions == []:
+                    session.cancel_all_orders(category='linear', settleCoin='USDT')
 
                 global percent_change
                 percent_change = g_percent_change(*percent_changes_old)
@@ -67,9 +68,10 @@ async def main():
             
             '''SET ⭣
             '''
-            if percent_change and not positions:
+            if percent_change and positions is not None and positions == []:
                 symbol, changes = percent_change
                 side_non_validated = 'Buy' if changes < 0 else 'Sell'
+                # side = 'Buy' if changes < 0 else 'Sell'
                 side = g_side_validated(symbol, side_non_validated, time_percent)
                 if side:
                     round_qty, price, balance = await g_data(symbol)
@@ -89,8 +91,9 @@ async def main():
                         side
                     )
         except:
-            s_cancel_position()
             traceback.print_exc()
+            s_cancel_position()
+            send_n(traceback.format_exc())
 
 if __name__ == '__main__':
     # s_pre_main()

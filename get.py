@@ -15,13 +15,15 @@ def g_last_prices():
                 info['symbol'] 
                 for info in data 
                 if 'USDT' in info['symbol'] and 
-                'USDC' not in info['symbol']
+                'USDC' not in info['symbol'] and
+                info['curPreListingPhase'] == ''
             )),
             np.array(tuple(
                 float(info['lastPrice']) 
                 for info in data 
                 if 'USDT' in info['symbol'] and 
-                'USDC' not in info['symbol']
+                'USDC' not in info['symbol'] and
+                info['curPreListingPhase'] == ''
             ))
         )
     
@@ -90,6 +92,15 @@ async def g_data(symbol):
         g_balance()
     ))))
 
+async def g_positions():
+    try:
+        return session.get_positions(
+            category='linear', 
+            settleCoin='USDT'
+        )['result']['list']
+    except:
+        pass
+
 def g_side_validated(symbol, side, time):
     def s_kline_check(kline, i=None):
         nonlocal symbol
@@ -132,9 +143,5 @@ def g_side_validated(symbol, side, time):
         print('side_validate ⭢ non verified')
         
 if __name__ == '__main__':
-    while True:
-        res = g_percent_change(
-            *g_last_prices()
-        )
-        if res and res[1] < 0:
-            pprint(res)
+    pprint(session_.get_tickers(category='linear', symbol='ETHUSDT')['result'])
+

@@ -1,5 +1,6 @@
 from session import session
 from settings__ import files_content
+from notifications import log_decorator
 
 import traceback
 from pprint import pprint
@@ -27,7 +28,8 @@ def s_cancel_position():
             qty=0
         )
     except:
-        traceback.print_exc()
+        # traceback.print_exc()
+        pass
 
 async def s_tp(
     tp_arr, 
@@ -43,13 +45,16 @@ async def s_tp(
         round_price
     )
     if tp_price_position != tp_price:
-        session.set_trading_stop(
-            category='linear', 
-            symbol=symbol, 
-            tpslMode='Full', 
-            takeProfit=tp_price, 
-            positionIdx=0
-        )
+        try:
+            session.set_trading_stop(
+                category='linear', 
+                symbol=symbol, 
+                tpslMode='Full', 
+                takeProfit=tp_price, 
+                positionIdx=0
+            )
+        except:
+            traceback.print_exc()
 
 async def s_sl(
     sl,
@@ -60,19 +65,34 @@ async def s_sl(
     limits_num,
     symbol
 ):
-    if not limits_num:
+    if limits_num < 1:
+        print(limits_num, 'sl')
         sl_price = s_round(
             avg_price + (sl * (1 if side == 'Sell' else -1) * avg_price),
             round_price
         )
         if sl_price_position != sl_price:
+            try:
+                session.set_trading_stop(
+                    category='linear', 
+                    symbol=symbol, 
+                    tpslMode='Full', 
+                    stopLoss=sl_price, 
+                    positionIdx=0
+                )
+            except:
+                traceback.print_exc()
+    elif sl_price_position != '':
+        try:
             session.set_trading_stop(
                 category='linear', 
                 symbol=symbol, 
                 tpslMode='Full', 
-                stopLoss=sl_price, 
+                stopLoss=0, 
                 positionIdx=0
             )
+        except:
+            traceback.print_exc()
 
 async def place_order(symbol, qty, side):
     pprint(session.place_order(
