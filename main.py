@@ -63,7 +63,7 @@ async def main():
                 if percent_change:
                     s_send_n(
                         f'PC::\n\n'
-                        f'{percent_change[0]}, {percent_change[1] * 100}%\n'
+                        f'{percent_change[0]}, {round(percent_change[1] * 100, 2)}%\n'
                         f'{datetime.now()}'
                     )
                     time_percent = int(int(time.time()) * 1000)
