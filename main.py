@@ -33,8 +33,8 @@ async def main():
                 if positions:
                     position = positions[0]
                     symbol = position['symbol']
-                    round = await g_round_qty(symbol)
-                    round_price = round[1]
+                    round_ = await g_round_qty(symbol)
+                    round_price = round_[1]
                     await asyncio.gather(
                         s_tp(
                             np.array((0.025, 0.007, *np.full(averaging_qty - 2, 0.02))),
