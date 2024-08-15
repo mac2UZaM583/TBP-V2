@@ -105,6 +105,22 @@ async def s_sl(
                 f'{traceback.format_exc()}'
             )
 
+async def s_switch_pos_mode(symbol, limits_num):
+    if files_content['MODE'].upper() != 'DEMO' and limits_num < 1:
+        try:
+            session.switch_margin_mode(
+                category='linear', 
+                symbol=symbol, 
+                tradeMode=1,
+                buyLeverage='10',
+                sellLeverage='10'
+            )
+        except:
+            s_send_n(
+                f'SET MODE::\n\n'
+                f'{traceback.format_exc()}'
+            )
+
 async def place_order(symbol, qty, side):
     session.place_order(
         category='linear',
@@ -173,7 +189,7 @@ def s_pre_main():
                 session.switch_margin_mode(
                     category='linear', 
                     symbol=symbol, 
-                    tradeMode=1,
+                    tradeMode=0,
                     buyLeverage='10',
                     sellLeverage='10'
                 )
@@ -181,6 +197,9 @@ def s_pre_main():
                 pass
 
 if __name__ == '__main__':
+    import asyncio
+
     s_pre_main()
+    # asyncio.run(s_switch_pos_mode('SAGAUSDT', 0))
     # s_cancel_position()
     # pprint(session.get_positions(category='linear', settleCoin='USDT', limit=1)['result']['list'][0])

@@ -53,7 +53,8 @@ async def main():
                             float(position['avgPrice']),
                             limits_num,
                             symbol
-                        )
+                        ),
+                        s_switch_pos_mode(symbol, limits_num)
                     )
                 elif positions == []:
                     session.cancel_all_orders(category='linear', settleCoin='USDT')
