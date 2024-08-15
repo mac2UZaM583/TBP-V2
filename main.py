@@ -61,12 +61,12 @@ async def main():
                 global percent_change
                 percent_change = g_percent_change(*percent_changes_old)
                 if percent_change:
+                    time_percent = int(int(time.time()) * 1000)
                     s_send_n(
                         f'PC::\n\n'
                         f'{percent_change[0]}, {round(percent_change[1] * 100, 2)}%\n'
                         f'{datetime.now()}'
                     )
-                    time_percent = int(int(time.time()) * 1000)
                     break
             
             '''SET ⭣
@@ -95,6 +95,10 @@ async def main():
                             side
                         )
                     )
+                s_send_n(
+                    f'SIDE::\n\n'
+                    f'{side}'
+                )
         except:
             s_send_n(
                 f'TRACEBACK::\n\n'
