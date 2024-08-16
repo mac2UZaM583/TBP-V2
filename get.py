@@ -57,7 +57,7 @@ async def g_round_qty(symbol):
     '''
     return tuple(map(lambda v: sub(v), (
         instruments_info['lotSizeFilter']['qtyStep'],
-        instruments_info['priceFilter']['tickSize']
+        instruments_info['priceFilter']['tickSize'][:-1]
     )))
 
 async def g_balance():
@@ -136,11 +136,13 @@ if __name__ == '__main__':
     import time
     from pprint import pprint
     
-    while True:
-        start = time.time()
-        percent_changes_old = g_last_prices()
-        while time.time() - start < float(files_content['CYCLE_UPDATE']):
-            res = g_percent_change(*percent_changes_old)
-            print(res)
-            break
+    # while True:
+    #     start = time.time()
+    #     percent_changes_old = g_last_prices()
+    #     while time.time() - start < float(files_content['CYCLE_UPDATE']):
+    #         res = g_percent_change(*percent_changes_old)
+    #         print(res)
+    #         break
+
+    pprint(asyncio.run(g_round_qty('WAVESUSDT')))
 

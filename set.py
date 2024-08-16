@@ -45,7 +45,7 @@ async def s_tp(
         avg_price + (tp_arr[-limits_num] * (-1 if side == 'Sell' else 1) * avg_price),
         round_price
     )
-    if tp_price_position != tp_price:
+    if s_round(tp_price_position, round_price) != tp_price:
         try:
             session.set_trading_stop(
                 category='linear', 
@@ -55,11 +55,11 @@ async def s_tp(
                 positionIdx=0
             )
         except:
-            # s_send_n(
-            #     f'TRACEBACK::\n\n'
-            #     f'{traceback.format_exc()}'
-            # )
-            pass
+            s_send_n(
+                f'TRACEBACK::\n\n'
+                f'{traceback.format_exc()}'
+            )
+            # pass
 
 async def s_sl(
     sl,
@@ -76,7 +76,7 @@ async def s_sl(
             avg_price + (sl * (1 if side == 'Sell' else -1) * avg_price),
             round_price
         )
-        if sl_price_position != sl_price:
+        if s_round(sl_price_position, round_price) != sl_price:
             try:
                 session.set_trading_stop(
                     category='linear', 
@@ -101,11 +101,11 @@ async def s_sl(
                 positionIdx=0
             )
         except:
-            # s_send_n(
-            #     f'TRACEBACK::\n\n'
-            #     f'{traceback.format_exc()}'
-            # )
-            pass
+            s_send_n(
+                f'TRACEBACK::\n\n'
+                f'{traceback.format_exc()}'
+            )
+            # pass
 
 async def s_switch_pos_mode(symbol, limits_num):
     if files_content['MODE'].upper() != 'DEMO' and limits_num < 1:
