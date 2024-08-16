@@ -57,7 +57,7 @@ async def g_round_qty(symbol):
     '''
     return tuple(map(lambda v: sub(v), (
         instruments_info['lotSizeFilter']['qtyStep'],
-        instruments_info['priceFilter']['tickSize'][:-1]
+        instruments_info['priceFilter']['tickSize']
     )))
 
 async def g_balance():

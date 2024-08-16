@@ -45,7 +45,7 @@ async def s_tp(
         avg_price + (tp_arr[-limits_num] * (-1 if side == 'Sell' else 1) * avg_price),
         round_price
     )
-    if s_round(tp_price_position, round_price) != tp_price:
+    if tp_price_position != tp_price:
         try:
             session.set_trading_stop(
                 category='linear', 
@@ -55,11 +55,7 @@ async def s_tp(
                 positionIdx=0
             )
         except:
-            s_send_n(
-                f'TRACEBACK::\n\n'
-                f'{traceback.format_exc()}'
-            )
-            # pass
+            pass
 
 async def s_sl(
     sl,
