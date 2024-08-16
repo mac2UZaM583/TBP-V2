@@ -55,10 +55,11 @@ async def s_tp(
                 positionIdx=0
             )
         except:
-            s_send_n(
-                f'TRACEBACK::\n\n'
-                f'{traceback.format_exc()}'
-            )
+            # s_send_n(
+            #     f'TRACEBACK::\n\n'
+            #     f'{traceback.format_exc()}'
+            # )
+            pass
 
 async def s_sl(
     sl,
@@ -100,10 +101,11 @@ async def s_sl(
                 positionIdx=0
             )
         except:
-            s_send_n(
-                f'TRACEBACK::\n\n'
-                f'{traceback.format_exc()}'
-            )
+            # s_send_n(
+            #     f'TRACEBACK::\n\n'
+            #     f'{traceback.format_exc()}'
+            # )
+            pass
 
 async def s_switch_pos_mode(symbol, limits_num):
     if files_content['MODE'].upper() != 'DEMO' and limits_num < 1:
