@@ -4,6 +4,37 @@ from settings__ import files_content
 
 import traceback
 
+def s_pre_main():
+    s_cancel_position()
+    for value in session.get_tickers(
+        category='linear'
+    )['result']['list']:
+        if files_content['MODE'].upper() == 'DEMO':
+            try:
+                symbol = value['symbol']
+                print(symbol)
+                session.set_leverage(
+                    category='linear', 
+                    symbol=symbol,
+                    buyLeverage='10',
+                    sellLeverage='10'
+                )
+            except:
+                pass
+        else:
+            try:
+                symbol = value['symbol']
+                print(symbol)
+                session.switch_margin_mode(
+                    category='linear', 
+                    symbol=symbol, 
+                    tradeMode=0,
+                    buyLeverage='10',
+                    sellLeverage='10'
+                )
+            except:
+                pass
+
 def s_round(value, round):
     if value != '':
         lst = str(f'{float(value):.{20}f}').split('.')
@@ -29,6 +60,50 @@ def s_cancel_position():
     except:
         s_send_n(
             f'!!! TRACEBACK::\n\n'
+            f'{traceback.format_exc()}'
+        )
+
+async def place_order(symbol, qty, side):
+    session.place_order(
+        category='linear',
+        symbol=symbol,
+        qty=qty, 
+        marketUnit='baseCoin',
+        side=side,
+        orderType='Market'
+    )
+
+async def place_orders_limits(
+    symbol, 
+    price,
+    limit_price_changes, 
+    qty, 
+    volume_multiplier,
+    round,
+    side
+):
+    try:
+        session.place_batch_order(
+            category='linear',
+            request=[
+                {
+                    'symbol': symbol,
+                    'qty': s_round(volume_multiplier ** (i + 1) * qty, round[0]), 
+                    'marketUnit': 'baseCoin',
+                    'side': side,
+                    'orderType': 'Limit',
+                    'price': s_round(
+                        ((price * limit_price_changes[i]) * (1 if side == 'Sell' else -1)) + price, 
+                        round[1]
+                    )
+                }
+                for i in range(int(files_content['AVERAGING_QTY']))
+            ]
+        )
+    except:
+        s_cancel_position()
+        s_send_n(
+            f'TRACEBACK::\n\n'
             f'{traceback.format_exc()}'
         )
 
@@ -90,21 +165,6 @@ async def s_sl(
                     f'TRACEBACK::\n\n'
                     f'{traceback.format_exc()}'
                 )
-    elif sl_price_position != '':
-        try:
-            session.set_trading_stop(
-                category='linear', 
-                symbol=symbol, 
-                tpslMode='Full', 
-                stopLoss=0, 
-                positionIdx=0
-            )
-        except:
-            s_send_n(
-                f'TRACEBACK::\n\n'
-                f'{traceback.format_exc()}'
-            )
-            # pass
 
 async def s_switch_pos_mode(symbol, limits_num):
     if files_content['MODE'].upper() != 'DEMO' and limits_num < 1:
@@ -121,81 +181,6 @@ async def s_switch_pos_mode(symbol, limits_num):
                 f'SET MODE::\n\n'
                 f'{traceback.format_exc()}'
             )
-
-async def place_order(symbol, qty, side):
-    session.place_order(
-        category='linear',
-        symbol=symbol,
-        qty=qty, 
-        marketUnit='baseCoin',
-        side=side,
-        orderType='Market'
-    )
-
-async def place_orders_limits(
-    symbol, 
-    price,
-    limit_price_changes, 
-    qty, 
-    volume_multiplier,
-    round,
-    side
-):
-    try:
-        session.place_batch_order(
-            category='linear',
-            request=[
-                {
-                    'symbol': symbol,
-                    'qty': s_round(volume_multiplier ** (i + 1) * qty, round[0]), 
-                    'marketUnit': 'baseCoin',
-                    'side': side,
-                    'orderType': 'Limit',
-                    'price': s_round(
-                        ((price * limit_price_changes[i]) * (1 if side == 'Sell' else -1)) + price, 
-                        round[1]
-                    )
-                }
-                for i in range(int(files_content['AVERAGING_QTY']))
-            ]
-        )
-    except:
-        s_cancel_position()
-        s_send_n(
-            f'TRACEBACK::\n\n'
-            f'{traceback.format_exc()}'
-        )
-
-def s_pre_main():
-    s_cancel_position()
-    for value in session.get_tickers(
-        category='linear'
-    )['result']['list']:
-        if files_content['MODE'].upper() == 'DEMO':
-            try:
-                symbol = value['symbol']
-                print(symbol)
-                session.set_leverage(
-                    category='linear', 
-                    symbol=symbol,
-                    buyLeverage='10',
-                    sellLeverage='10'
-                )
-            except:
-                pass
-        else:
-            try:
-                symbol = value['symbol']
-                print(symbol)
-                session.switch_margin_mode(
-                    category='linear', 
-                    symbol=symbol, 
-                    tradeMode=0,
-                    buyLeverage='10',
-                    sellLeverage='10'
-                )
-            except:
-                pass
 
 if __name__ == '__main__':
     import asyncio

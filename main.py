@@ -106,6 +106,5 @@ async def main():
                 f'{traceback.format_exc()}'
             )
 
-if __name__ == '__main__':
-    # s_pre_main()
-    asyncio.run(main()) #⭠⭡⭢⭣⭤ ⭥⮂⮃
+# s_pre_main()
+asyncio.run(main()) #⭠⭡⭢⭣⭤ ⭥⮂⮃
