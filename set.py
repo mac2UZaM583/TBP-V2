@@ -55,7 +55,10 @@ async def s_tp(
                 positionIdx=0
             )
         except:
-            pass
+            s_send_n(
+                f'TRACEBACK::\n\n'
+                f'{traceback.format_exc()}'
+            )
 
 async def s_sl(
     sl,
@@ -72,7 +75,7 @@ async def s_sl(
             avg_price + (sl * (1 if side == 'Sell' else -1) * avg_price),
             round_price
         )
-        if s_round(sl_price_position, round_price) != sl_price:
+        if sl_price_position != sl_price:
             try:
                 session.set_trading_stop(
                     category='linear', 
@@ -197,7 +200,10 @@ def s_pre_main():
 if __name__ == '__main__':
     import asyncio
 
-    s_pre_main()
+    # s_pre_main()
+    print(s_round('1.162', 4))
+    print(float('1.162'))
+
     # asyncio.run(s_switch_pos_mode('SAGAUSDT', 0))
     # s_cancel_position()
     # pprint(session.get_positions(category='linear', settleCoin='USDT', limit=1)['result']['list'][0])
