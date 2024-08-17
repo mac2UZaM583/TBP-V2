@@ -54,7 +54,6 @@ async def main():
                             limits_num,
                             symbol
                         ),
-                        s_switch_pos_mode(symbol, limits_num)
                     )
                 elif positions == []:
                     session.cancel_all_orders(category='linear', settleCoin='USDT')
@@ -89,7 +88,7 @@ async def main():
                         place_orders_limits(
                             symbol, 
                             price,
-                            (0.04, *np.arange(1, averaging_qty) * 0.08),
+                            (0.07, *np.arange(1, averaging_qty) * 0.12),
                             qty,
                             float(files_content['VOLUME_MULTIPLIER']),
                             round_qty,

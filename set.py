@@ -120,8 +120,10 @@ async def s_tp(
         avg_price + (tp_arr[-limits_num] * (-1 if side == 'Sell' else 1) * avg_price),
         round_price
     )
-    len_ = len(tp_price[:-1])
-    if tp_price_position[:len_] != tp_price[:len_]:
+    if (
+        tp_price_position != tp_price and
+        tp_price_position != tp_price[:-1]
+    ):
         try:
             session.set_trading_stop(
                 category='linear', 
@@ -146,13 +148,14 @@ async def s_sl(
     symbol
 ):
     if limits_num < 1:
-        print(limits_num, 'sl')
         sl_price = s_round(
             avg_price + (sl * (1 if side == 'Sell' else -1) * avg_price),
             round_price
         )
-        len_ = len(sl_price[:-1])
-        if sl_price_position[:len_] != sl_price[:len_]:
+        if (
+            sl_price_position != sl_price and 
+            sl_price_position != sl_price[:-1]
+        ):
             try:
                 session.set_trading_stop(
                     category='linear', 
@@ -167,22 +170,6 @@ async def s_sl(
                     f'TRACEBACK::\n\n'
                     f'{traceback.format_exc()}'
                 )
-
-async def s_switch_pos_mode(symbol, limits_num):
-    if files_content['MODE'].upper() != 'DEMO' and limits_num < 1:
-        try:
-            session.switch_margin_mode(
-                category='linear', 
-                symbol=symbol, 
-                tradeMode=1,
-                buyLeverage='10',
-                sellLeverage='10'
-            )
-        except:
-            s_send_n(
-                f'SET MODE::\n\n'
-                f'{traceback.format_exc()}'
-            )
 
 if __name__ == '__main__':
     import asyncio
