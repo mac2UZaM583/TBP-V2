@@ -120,7 +120,8 @@ async def s_tp(
         avg_price + (tp_arr[-limits_num] * (-1 if side == 'Sell' else 1) * avg_price),
         round_price
     )
-    if tp_price_position != tp_price:
+    len_ = len(tp_price[:-1])
+    if tp_price_position[:len_] != tp_price[:len_]:
         try:
             session.set_trading_stop(
                 category='linear', 
@@ -150,7 +151,8 @@ async def s_sl(
             avg_price + (sl * (1 if side == 'Sell' else -1) * avg_price),
             round_price
         )
-        if sl_price_position != sl_price:
+        len_ = len(sl_price[:-1])
+        if sl_price_position[:len_] != sl_price[:len_]:
             try:
                 session.set_trading_stop(
                     category='linear', 
