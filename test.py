@@ -55,7 +55,6 @@ def g_pack_data(
     x, y = zip(*[
         (
             rsi[i - features:i],
-            # на основе текущего rsi даем классы основываясь на будущем изменении цены
             -1 if closed[i] / closed[i + features] >= 1 + profit_threshold 
             else 1 if closed[i] / closed[i + features] <= 1 - profit_threshold 
             else 0
@@ -82,40 +81,76 @@ def g_knn_indicator(x, y, x_test):
     knn.fit(x, y)
     return knn.predict(x_test)
 
+def g_validate_model(
+    y_pred, 
+    closed, 
+    profit_threshold=0.01,
+    features=10, 
+):
+    lst = []
+    for i in range(len(closed) - features):
+        if y_pred[i] != 0:
+            changes = closed[i] / closed[i + features]
+            lst.append(
+                y_pred[i] == (
+                    -1 if changes >= 1 + profit_threshold
+                    else 1 if changes <= 1 - profit_threshold
+                    else 0
+                )
+            )
+    lst = np.array(lst)
+    return round(sum(lst) / len(lst) * 100, 2)
+
 def g_visualize(
-    x_visualize, 
-    y_visualize,
+    x_vis, 
+    y_vis,
     target_y,
     features=10,
+    profit_threshold=0.01
 ):  
-    len_x_vis_us = len(x_visualize) -features
     fig = go.Figure()
     fig.add_trace(go.Scatter(
-        x=x_visualize, 
-        y=y_visualize, 
+        x=x_vis, 
+        y=y_vis, 
         mode='lines+markers', 
         name='Closed', 
         line=dict(color='blue')
     ))
-    for i in range(len_x_vis_us):
-        text = "buy" if target_y[i] == 1 else "sell" if target_y[i] == -1 else False
-        if text:
-            print(i, len_x_vis_us)
-            fig.add_annotation(
-                x=i, 
-                y=y_visualize[i] + y_visualize[i] * 0.0015,
-                text=text, 
-                showarrow=True, 
-                arrowhead=2,
-                font=dict(size=12, color='green' if text == "buy" else 'red'),
-            )
-            fig.add_annotation(
-                x=i + features, 
-                y=y_visualize[i + features] + y_visualize[i + features] * 0.0015,
-                text="close", 
-                showarrow=True, 
-                arrowhead=2
-            )
+    for i in range(len(x_vis) - features):
+        side = "buy" if target_y[i] == 1 else "sell" if target_y[i] == -1 else False
+        if side:
+            for i_ in range(2):
+                x_ann = i
+                y_ann = y_vis[i]
+                text = side
+                txt_color = 'green' if text == "buy" else 'red'
+                color_border, borderwidth, borderpad = np.full(3, None)
+                if i_:
+                    x_ann = (i + features)
+                    y_ann = y_vis[i + features]
+                    text = "close"
+                    txt_color = "black"
+                    price_changes = y_vis[i] / y_vis[i + features]
+                    color_border = "green" if any((
+                        price_changes >= 1 + profit_threshold and side == "sell",
+                        price_changes <= 1 - profit_threshold and side == "buy"
+                    )) else "red"
+                    borderwidth = 3
+                    borderpad = 1
+                fig.add_annotation(
+                    x=x_ann,  
+                    y=y_ann + y_ann * 0.0015,
+                    text=text, 
+                    showarrow=True, 
+                    arrowhead=2,
+                    font=dict(size=12, color=txt_color),
+                    bordercolor=color_border,
+                    borderwidth=borderwidth,
+                    borderpad=borderpad,
+                )
+
+            if i % 10 == 0:
+                print(i, len(x_vis) - features)
 
     fig.update_layout(
         title='График цен', 
@@ -124,36 +159,35 @@ def g_visualize(
     )
     fig.show()
 
-def g_validate_model(
-    y_pred, 
-    closed, 
-    features=10, 
-    profit_threshold=0.01
-):
-    len_closed = len(closed)
-    len_y = len(y_pred)
-    lst = [
-        y_pred[i - (len_closed - len_y)] == (-1
-        if closed[i] / closed[i + features] >= 1 + profit_threshold
-        else 1 if closed[i] / closed[i + features] <= 1 - profit_threshold 
-        else 0)
-        for i in range(len_closed - len_y, len_closed - features)
-    ]
-    return round(sum(lst) / len(lst) * 100, 2)
-
 def main():
-    closed, rsi = g_data("CETUSUSDT", 2000)
-    features = 10
-    x, x_test, y, y_test, = g_pack_data(closed, rsi, test=True, train_size=0.7)
-    y_pred = g_knn_indicator(x, y, x_test)
-    
-    print(f"PRESITION: {g_validate_model(y_pred, closed)}%")
-    closed_vis = closed[len(closed) - len(y_pred) - features:]
-    g_visualize(
-        np.arange(len(closed_vis)), 
-        closed_vis,
-        y_pred,
+    closed, rsi = g_data("SUIUSDT", 200_000)
+    features = 4
+    profit_threshold_fr = 0.005
+    profit_threshold = 0.005
+
+    x, x_test, y, y_test, = g_pack_data(
+        closed, 
+        rsi, 
+        test=True, 
+        train_size=0.8, 
+        profit_threshold=profit_threshold_fr, 
+        features=features,
     )
+    y_pred = g_knn_indicator(x, y, x_test)
+    closed_stat = closed[len(closed) - len(y_pred) - features:]
+    print(f"PRESITION: {g_validate_model(
+        y_pred, 
+        closed_stat, 
+        profit_threshold, 
+        features=features,
+    )}%")
+    # g_visualize(
+    #     np.arange(len(closed_stat)), 
+    #     closed_stat,
+    #     y_pred,
+    #     profit_threshold=profit_threshold,
+    #     features=features,
+    # )
 
 main()
 
