@@ -159,11 +159,11 @@ def g_visualize(
     fig.show()
 
 def main():
-    closed, rsi = g_data("ATOMUSDT", 100_000)
-    ftrs_back = 60
-    ftrs_nxt = 60
-    profit_threshold_fr = 0.06
-    profit_threshold = 0.005
+    closed, rsi = g_data("SUIUSDT", 10_000)
+    ftrs_back = 40
+    ftrs_nxt = 10
+    profit_threshold_fr = 0.01
+    profit_threshold = 0.01
 
     x, x_test, y, y_test, = g_pack_data(
         closed, 
