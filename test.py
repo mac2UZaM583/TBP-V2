@@ -10,7 +10,6 @@ from pprint import pprint
 
 session = HTTP()
 
-
 def g_data(symbol="ATOMUSDT", qty=10_000):
     async def g_klines(interval, qty):
         start = time.time() * 1000
@@ -50,16 +49,16 @@ def g_pack_data(
     test=False,
     train_size=0.8,
     profit_threshold=0.01,
-    features=10,
+    ftrs_back=10,
 ):
     x, y = zip(*[
         (
-            rsi[i - features:i],
-            -1 if closed[i] / closed[i + features] >= 1 + profit_threshold 
-            else 1 if closed[i] / closed[i + features] <= 1 - profit_threshold 
+            rsi[i - ftrs_back:i],
+            -1 if closed[i] / closed[i + ftrs_back] >= 1 + profit_threshold 
+            else 1 if closed[i] / closed[i + ftrs_back] <= 1 - profit_threshold 
             else 0
         )
-        for i in range(features, len(rsi) - features)
+        for i in range(ftrs_back, len(rsi) - ftrs_back)
     ])
     if test:
         len_80 = int(len(x) * train_size)
@@ -85,12 +84,12 @@ def g_validate_model(
     y_pred, 
     closed, 
     profit_threshold=0.01,
-    features=10, 
+    ftrs_nxt=10, 
 ):
     lst = []
-    for i in range(len(closed) - features):
+    for i in range(len(closed) - ftrs_nxt):
         if y_pred[i] != 0:
-            changes = closed[i] / closed[i + features]
+            changes = closed[i] / closed[i + ftrs_nxt]
             lst.append(
                 y_pred[i] == (
                     -1 if changes >= 1 + profit_threshold
@@ -105,7 +104,7 @@ def g_visualize(
     x_vis, 
     y_vis,
     target_y,
-    features=10,
+    ftrs_nxt=10,
     profit_threshold=0.01
 ):  
     fig = go.Figure()
@@ -116,7 +115,7 @@ def g_visualize(
         name='Closed', 
         line=dict(color='blue')
     ))
-    for i in range(len(x_vis) - features):
+    for i in range(len(x_vis) - ftrs_nxt):
         side = "buy" if target_y[i] == 1 else "sell" if target_y[i] == -1 else False
         if side:
             for i_ in range(2):
@@ -126,11 +125,11 @@ def g_visualize(
                 txt_color = 'green' if text == "buy" else 'red'
                 color_border, borderwidth, borderpad = np.full(3, None)
                 if i_:
-                    x_ann = (i + features)
-                    y_ann = y_vis[i + features]
+                    x_ann = (i + ftrs_nxt)
+                    y_ann = y_vis[i + ftrs_nxt]
                     text = "close"
                     txt_color = "black"
-                    price_changes = y_vis[i] / y_vis[i + features]
+                    price_changes = y_vis[i] / y_vis[i + ftrs_nxt]
                     color_border = "green" if any((
                         price_changes >= 1 + profit_threshold and side == "sell",
                         price_changes <= 1 - profit_threshold and side == "buy"
@@ -150,7 +149,7 @@ def g_visualize(
                 )
 
             if i % 10 == 0:
-                print(i, len(x_vis) - features)
+                print(i, len(x_vis) - ftrs_nxt)
 
     fig.update_layout(
         title='График цен', 
@@ -160,9 +159,10 @@ def g_visualize(
     fig.show()
 
 def main():
-    closed, rsi = g_data("SUIUSDT", 200_000)
-    features = 4
-    profit_threshold_fr = 0.005
+    closed, rsi = g_data("ATOMUSDT", 100_000)
+    ftrs_back = 60
+    ftrs_nxt = 60
+    profit_threshold_fr = 0.06
     profit_threshold = 0.005
 
     x, x_test, y, y_test, = g_pack_data(
@@ -171,23 +171,23 @@ def main():
         test=True, 
         train_size=0.8, 
         profit_threshold=profit_threshold_fr, 
-        features=features,
+        ftrs_back=ftrs_back,
     )
     y_pred = g_knn_indicator(x, y, x_test)
-    closed_stat = closed[len(closed) - len(y_pred) - features:]
+    closed_stat = closed[len(closed) - len(y_pred) - ftrs_nxt:]
     print(f"PRESITION: {g_validate_model(
         y_pred, 
         closed_stat, 
         profit_threshold, 
-        features=features,
+        ftrs_nxt=ftrs_nxt,
     )}%")
-    # g_visualize(
-    #     np.arange(len(closed_stat)), 
-    #     closed_stat,
-    #     y_pred,
-    #     profit_threshold=profit_threshold,
-    #     features=features,
-    # )
+    g_visualize(
+        np.arange(len(closed_stat)), 
+        closed_stat,
+        y_pred,
+        profit_threshold=profit_threshold,
+        ftrs_nxt=ftrs_nxt,
+    )
 
 main()
 
