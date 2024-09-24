@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 from pybit.unified_trading import HTTP
 import time
 import numpy as np
+import pandas as pd
 import asyncio
 from pprint import pprint
 
@@ -40,26 +41,59 @@ def g_data(symbol="ATOMUSDT", qty=10_000):
             rsi.append(100 - (100 / (1 + avg_gain / avg_losses)))
         return np.array(rsi)
     
-    closed = np.float64(asyncio.run(g_klines(1, qty))[:, 4][::-1])
-    return (closed[14:], g_rsi(closed))
+    def g_wt(klines, periods=(10, 21),):
+        def clclt_ema(prices, span=3):
+            alpha = 2 / (span + 1)
+            ema_values = []
+            ema_values.append(prices[0])
+            for price in prices[1:]:
+                ema_values.append((price - ema_values[-1]) * alpha + ema_values[-1])
+            return np.array(ema_values)
+        
+        prices_mean_ = (klines[:, 2] + klines[:, 3] + klines[:, 4]) / 3
+        closes = klines[:, 4]
+        emas_mean = [
+            (closes + clclt_ema(prices_mean_, period)) / 2
+            for period in periods
+        ]
+        wt = emas_mean[0] - emas_mean[1]
+        wt_min = np.min(wt)
+        return (wt - wt_min) / (np.max(wt) - wt_min) * 200 - 100
+    
+    klines = np.float64(asyncio.run(g_klines(1, qty)))[::-1]
+    closed = klines[:, 4]
+    back_num = 14
+    return (
+        closed[back_num:], 
+        (
+            [g_rsi(closed, args) for args in (7, 14, 21)],
+            *[g_wt(klines, periods=args)[back_num:] for args in ((10, 21), (3, 7))],
+        )
+    )
 
 def g_pack_data(
     closed, 
-    rsi,
+    indicators,
     test=False,
     train_size=0.8,
     profit_threshold=0.01,
     ftrs_back=10,
+    ftrs_nxt=10,
 ):
-    x, y = zip(*[
-        (
-            rsi[i - ftrs_back:i],
-            -1 if closed[i] / closed[i + ftrs_back] >= 1 + profit_threshold 
-            else 1 if closed[i] / closed[i + ftrs_back] <= 1 - profit_threshold 
-            else 0
-        )
-        for i in range(ftrs_back, len(rsi) - ftrs_back)
-    ])
+    x, y = [], []
+    for i in range(ftrs_back, len(indicators[0]) - ftrs_nxt):
+        changes = closed[i] / closed[i + ftrs_nxt]
+        for el in indicators:
+            x.append(el[i]) # проблемка нах
+        if i == ftrs_back or y[i - ftrs_back - 1] == 0:
+            y.append(
+                -1 if changes >= 1 + profit_threshold
+                else 1 if changes <= 1 - profit_threshold
+                else 0
+            )
+        else:
+            y.append(0)
+    
     if test:
         len_80 = int(len(x) * train_size)
         return (
@@ -75,12 +109,17 @@ def g_pack_data(
         np.array(y)[-1],
     )
 
-def g_knn_indicator(x, y, x_test):
-    knn = KNeighborsClassifier(n_neighbors=3)
+def g_knn_indicator(
+    x, 
+    y, 
+    x_test, 
+    n_neighbors=3
+):
+    knn = KNeighborsClassifier(n_neighbors=n_neighbors)
     knn.fit(x, y)
     return knn.predict(x_test)
 
-def g_validate_model(
+def g_presition_result(
     y_pred, 
     closed, 
     profit_threshold=0.01,
@@ -98,7 +137,11 @@ def g_validate_model(
                 )
             )
     lst = np.array(lst)
-    return round(sum(lst) / len(lst) * 100, 2)
+    len_lst = len(lst)
+    sum_lst = sum(lst)
+    if len_lst == 0 or sum_lst == 0:
+        return 0
+    return round(sum_lst / len_lst * 100, 2)
 
 def g_visualize(
     x_vis, 
@@ -159,35 +202,42 @@ def g_visualize(
     fig.show()
 
 def main():
-    closed, rsi = g_data("SUIUSDT", 10_000)
-    ftrs_back = 40
+    closed, indctrs = g_data("SUIUSDT", 2_000)
+    ftrs_back = 1
     ftrs_nxt = 10
     profit_threshold_fr = 0.01
     profit_threshold = 0.01
+    # print(indctrs[1:])
 
     x, x_test, y, y_test, = g_pack_data(
         closed, 
-        rsi, 
+        indctrs, 
         test=True, 
         train_size=0.8, 
         profit_threshold=profit_threshold_fr, 
         ftrs_back=ftrs_back,
+        ftrs_nxt=ftrs_nxt,
     )
-    y_pred = g_knn_indicator(x, y, x_test)
+    print(x)
+    y_pred = g_knn_indicator(x, y, x_test, 8)
     closed_stat = closed[len(closed) - len(y_pred) - ftrs_nxt:]
-    print(f"PRESITION: {g_validate_model(
-        y_pred, 
-        closed_stat, 
-        profit_threshold, 
-        ftrs_nxt=ftrs_nxt,
-    )}%")
-    g_visualize(
-        np.arange(len(closed_stat)), 
-        closed_stat,
-        y_pred,
-        profit_threshold=profit_threshold,
-        ftrs_nxt=ftrs_nxt,
-    )
+    # print(f"PRESITION: {g_presition_result(
+    #     y_pred, 
+    #     closed_stat, 
+    #     profit_threshold, 
+    #     ftrs_nxt=ftrs_nxt,
+    # )}%")
+    # g_visualize(
+    #     np.arange(len(closed_stat)), 
+    #     closed_stat,
+    #     y_test,
+    #     profit_threshold=profit_threshold,
+    #     ftrs_nxt=ftrs_nxt,
+    # )
 
 main()
 
+# тщательнее организовать функции и сосредоточится на формирования данных в функции pack_data
+# поменять названия функций (g_filtered/)
+
+# ^G/^F
