@@ -60,14 +60,27 @@ def g_data(symbol="ATOMUSDT", qty=10_000):
         wt_min = np.min(wt)
         return (wt - wt_min) / (np.max(wt) - wt_min) * 200 - 100
     
+    def g_tsi(closed, period=14):
+        return np.array([
+            np.corrcoef(closed[i:i + period], np.arange(len(closed))[i:i + period])[0, 1]
+            for i in range(len(closed) - period + 1)
+        ])
+
+    def g_lorentzian_distance(i, features_array, features_series):
+        return np.sum([
+            np.log(1 + np.abs(features_series[i_] - features_array[i_][i]))
+            for i_ in range(len(features_series))
+        ])
+
     klines = np.float64(asyncio.run(g_klines(1, qty)))[::-1]
     closed = klines[:, 4]
-    back_num = 14
+    back_num = 21
     return (
         closed[back_num:], 
         (
-            [g_rsi(closed, args) for args in (7, 14, 21)],
-            *[g_wt(klines, periods=args)[back_num:] for args in ((10, 21), (3, 7))],
+            *[g_rsi(closed, args) for args in (7, 14, back_num)],
+            *[g_wt(klines, periods=args)[back_num:] for args in ((10, back_num), (3, 7))],
+            
         )
     )
 
