@@ -1,6 +1,7 @@
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, precision_score
+from sklearn.impute import SimpleImputer
 import plotly.graph_objects as go
 from pybit.unified_trading import HTTP
 import time
@@ -11,23 +12,39 @@ from pprint import pprint
 
 session = HTTP()
 
-def g_data(symbol="ATOMUSDT", qty=10_000):
-    async def g_klines(interval, qty):
-        start = time.time() * 1000
-        limits = np.append(np.full(qty // 1000, 1000), qty % 1000)
-        return np.concatenate(await asyncio.gather(*(
-            asyncio.to_thread(lambda i=i: session.get_kline(
-                category="linear",
-                symbol=symbol,
-                interval=interval,
-                limit=limits[i],
-                end=str(int(start - (i * 60_000_000)))
-            )["result"]["list"])
-            for i in range(len(limits))
-            if limits[i] > 0
-        )))
+async def g_klines(
+    symbol, 
+    qty,
+    interval=1, 
+):
+    start = time.time() * 1000
+    limits = np.append(np.full(qty // 1000, 1000), qty % 1000)
+    return np.concatenate(await asyncio.gather(*(
+        asyncio.to_thread(lambda i=i: session.get_kline(
+            category="linear",
+            symbol=symbol,
+            interval=interval,
+            limit=limits[i],
+            end=str(int(start - (i * 60_000_000)))
+        )["result"]["list"])
+        for i in range(len(limits))
+        if limits[i] > 0
+    )))
 
-    def g_rsi(closed, period=14):
+def g_indications(
+    klines,
+    closed,
+    rsi_args=(10, 14, 21, 31),
+    tsi_args=(10, 14, 21),
+    wt_args=((3, 7), (9, 14)), 
+):
+    # def g_lorentzian_distance(i, features_array, features_series):
+    #     return np.sum([
+    #         np.log(1 + np.abs(features_series[i_] - features_array[i_][i]))
+    #         for i_ in range(len(features_series))
+    #     ])
+    
+    def g_rsi(closed, period=14,):
         changes = np.diff(closed)
         gains = np.where(changes > 0, changes, 0)
         losses = -np.where(changes < 0, changes, 0)
@@ -41,6 +58,12 @@ def g_data(symbol="ATOMUSDT", qty=10_000):
             rsi.append(100 - (100 / (1 + avg_gain / avg_losses)))
         return np.array(rsi)
     
+    def g_tsi(closed, period=14,):
+        return np.array([
+            np.corrcoef(closed[i:i + period], np.arange(len(closed))[i:i + period])[0, 1]
+            for i in range(len(closed) - period + 1)
+        ])
+
     def g_wt(klines, periods=(10, 21),):
         def clclt_ema(prices, span=3):
             alpha = 2 / (span + 1)
@@ -56,48 +79,37 @@ def g_data(symbol="ATOMUSDT", qty=10_000):
             (closes + clclt_ema(prices_mean_, period)) / 2
             for period in periods
         ]
-        wt = emas_mean[0] - emas_mean[1]
-        wt_min = np.min(wt)
-        return (wt - wt_min) / (np.max(wt) - wt_min) * 200 - 100
-    
-    def g_tsi(closed, period=14):
-        return np.array([
-            np.corrcoef(closed[i:i + period], np.arange(len(closed))[i:i + period])[0, 1]
-            for i in range(len(closed) - period + 1)
-        ])
+        wt_change = emas_mean[0] - emas_mean[1]
+        wt_min = np.min(wt_change)
+        return (wt_change - wt_min) / (np.max(wt_change) - wt_min) * 200 - 100
 
-    def g_lorentzian_distance(i, features_array, features_series):
-        return np.sum([
-            np.log(1 + np.abs(features_series[i_] - features_array[i_][i]))
-            for i_ in range(len(features_series))
-        ])
+    def array_nan_func(data, len_=len(klines),):
+        array_nan = np.full(len_, np.nan)
+        array_nan[-len(data):] = data
+        return array_nan
 
-    klines = np.float64(asyncio.run(g_klines(1, qty)))[::-1]
-    closed = klines[:, 4]
-    back_num = 21
-    return (
-        closed[back_num:], 
-        (
-            *[g_rsi(closed, args) for args in (7, 14, back_num)],
-            *[g_wt(klines, periods=args)[back_num:] for args in ((10, back_num), (3, 7))],
-            
-        )
+    funcs_results_func = lambda func, data, args: [func(data, arg) for arg in args]
+    funcs_results = (
+        *funcs_results_func(g_rsi, closed, rsi_args),
+        *funcs_results_func(g_tsi, closed, tsi_args),
+        *funcs_results_func(g_wt, klines, wt_args),
     )
+    return tuple(map(lambda v: array_nan_func(v,), funcs_results))
 
-def g_pack_data(
+def g_train_test_split(
     closed, 
-    indicators,
+    indications,
     test=False,
     train_size=0.8,
     profit_threshold=0.01,
-    ftrs_back=10,
     ftrs_nxt=10,
-):
+    ftrs_back=0,
+):  
     x, y = [], []
-    for i in range(ftrs_back, len(indicators[0]) - ftrs_nxt):
+    for i in range(ftrs_back, len(closed) - ftrs_nxt):
         changes = closed[i] / closed[i + ftrs_nxt]
-        for el in indicators:
-            x.append(el[i]) # проблемка нах
+        x_2l = [el[i] for el in indications]
+        x.append(x_2l)
         if i == ftrs_back or y[i - ftrs_back - 1] == 0:
             y.append(
                 -1 if changes >= 1 + profit_threshold
@@ -107,6 +119,7 @@ def g_pack_data(
         else:
             y.append(0)
     
+    x = SimpleImputer(strategy="mean").fit_transform(x)
     if test:
         len_80 = int(len(x) * train_size)
         return (
@@ -139,11 +152,11 @@ def g_presition_result(
     ftrs_nxt=10, 
 ):
     lst = []
-    for i in range(len(closed) - ftrs_nxt):
-        if y_pred[i] != 0:
+    for i in range(len(closed) - len(y_pred), len(closed) - ftrs_nxt):
+        if y_pred[i - (len(closed) - len(y_pred))] != 0:
             changes = closed[i] / closed[i + ftrs_nxt]
             lst.append(
-                y_pred[i] == (
+                y_pred[i - (len(closed) - len(y_pred))] == (
                     -1 if changes >= 1 + profit_threshold
                     else 1 if changes <= 1 - profit_threshold
                     else 0
@@ -215,42 +228,36 @@ def g_visualize(
     fig.show()
 
 def main():
-    closed, indctrs = g_data("SUIUSDT", 2_000)
-    ftrs_back = 1
+    klines = np.float64(asyncio.run(g_klines("SUIUSDT", 10_000)))[::-1]
+    closed = klines[:, 4]
+    profit_threshold = 0.005
     ftrs_nxt = 10
-    profit_threshold_fr = 0.01
-    profit_threshold = 0.01
-    # print(indctrs[1:])
-
-    x, x_test, y, y_test, = g_pack_data(
+    indications = g_indications(klines, closed)
+    x, x_test, y, y_test = g_train_test_split(
         closed, 
-        indctrs, 
-        test=True, 
-        train_size=0.8, 
-        profit_threshold=profit_threshold_fr, 
-        ftrs_back=ftrs_back,
+        indications,
+        test=True,
+        train_size=0.8,
         ftrs_nxt=ftrs_nxt,
+        profit_threshold=profit_threshold,
     )
-    print(x)
-    y_pred = g_knn_indicator(x, y, x_test, 8)
-    closed_stat = closed[len(closed) - len(y_pred) - ftrs_nxt:]
-    # print(f"PRESITION: {g_presition_result(
+    y_pred = g_knn_indicator(x, y, x_test, n_neighbors=3)
+    # pprint(y_pred)
+    # pprint(f"Точность предсказания: {g_presition_result(
     #     y_pred, 
-    #     closed_stat, 
-    #     profit_threshold, 
+    #     closed, 
     #     ftrs_nxt=ftrs_nxt,
-    # )}%")
-    # g_visualize(
-    #     np.arange(len(closed_stat)), 
-    #     closed_stat,
-    #     y_test,
     #     profit_threshold=profit_threshold,
-    #     ftrs_nxt=ftrs_nxt,
-    # )
+    # )}%")
+    g_visualize(
+        np.arange(len(closed[len(closed) - len(y_pred):])),
+        closed[len(closed) - len(y_pred):],
+        y_pred,
+        ftrs_nxt=ftrs_nxt,
+        profit_threshold=profit_threshold,
+    )
 
 main()
 
-# тщательнее организовать функции и сосредоточится на формирования данных в функции pack_data
-# поменять названия функций (g_filtered/)
 
 # ^G/^F
