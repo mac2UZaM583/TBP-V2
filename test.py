@@ -32,7 +32,6 @@ async def g_klines(
     )))
 
 def g_indications(
-    klines,
     closed,
     rsi_args=(),
     tsi_args=(),
@@ -63,14 +62,14 @@ def g_indications(
             for i in range(len(closed) - period + 1)
         ])
     
-    def array_nan_func(data, len_=len(klines),):
+    def array_nan_func(data, len_=len(closed),):
         array_nan = np.full(len_, np.nan)
         array_nan[-len(data):] = data
         return array_nan
 
     funcs_results_func = lambda func, data, args: [func(data, arg) for arg in args]
     funcs_results = (*funcs_results_func(g_rsi, closed, rsi_args),*funcs_results_func(g_tsi, closed, tsi_args),)
-    return tuple(map(lambda v: array_nan_func(v,), funcs_results))
+    return [array_nan_func(el) for el in funcs_results]
 
 def g_x_y(
     closed,
@@ -205,12 +204,10 @@ def g_presition_result(
     return round(sum_lst / len_lst * 100, 2)
 
 def main():
-    klines = np.float64(asyncio.run(g_klines("SUIUSDT", 10_000)))[::-1]
-    closed = klines[:, 4]
+    closed = np.float64(asyncio.run(g_klines("SUIUSDT", 10_000)))[::-1][:, 4]
     profit_threshold = 0.01
     ftrs_nxt = 10
     indications = g_indications(
-        klines, 
         closed,
         rsi_args=(10, 14, 21, 31),
         tsi_args=(10, 14, 21),
@@ -227,13 +224,13 @@ def main():
         test=True, 
     )
     y_pred = g_knn_predict(x_train, y_train, x_test, n_neighbors=3)
-    g_visualize(
-        x_vis=np.arange(),
-        y_vis=closed[len(closed) - len(y_pred):],
-        y_test,
-        ftrs_nxt=ftrs_nxt,
-        profit_threshold=profit_threshold,
-    )
+    # g_visualize(
+    #     x_vis=np.arange(),
+    #     y_vis=closed[len(closed) - len(y_pred):],
+    #     y_test,
+    #     ftrs_nxt=ftrs_nxt,
+    #     profit_threshold=profit_threshold,
+    # )
     # pprint(f"Точность предсказания: {g_presition_result(
     #     y_pred, 
     #     closed, 
