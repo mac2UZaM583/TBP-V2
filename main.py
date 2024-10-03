@@ -1,110 +1,41 @@
-from set import *
-from get import *
-from settings__ import files_content
-from session import session
-from notifications import s_send_n
+import numpy as np
+import pandas as pd
+from data_ import g_klines
+from format_data import *
+from model_ import g_knn_predict
+from sklearn.metrics import classification_report, accuracy_score
+from test import g_visualize
 
-import asyncio
-import time
-import traceback
-from datetime import datetime
-from itertools import count
+def main():
+    data = g_pack_data(np.float64(g_klines("SUIUSDT", 2_000)))
+    x_train, x_test, y_train, y_test = g_train_test_split(
+        data[['RSI', 'ADX', 'CCI', 'WT']], 
+        np.where(data['RSI'] > 70, -1, np.where(data['RSI'] < 30, 1, 0)), 
+        test=True
+    )
+    y_pred = g_knn_predict(x_train, y_train, x_test) 
+    data['Predicted Label'] = np.nan 
+    data.loc[x_test.index, 'Predicted Label'] = y_pred 
+    print("Accuracy:", accuracy_score(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
 
-averaging_qty = int(files_content['AVERAGING_QTY'])
-count_ = count(0, 1)
-
-async def main():
-    while True:
-        try:
-            start = time.time()
-            percent_changes_old = g_last_prices()
-            while time.time() - start < float(files_content['CYCLE_UPDATE']):
-                print(f'cycle {next(count_)}')
-                positions, limits_num = await asyncio.gather(
-                    g_positions(),
-                    asyncio.to_thread(lambda: len(tuple(filter(
-                        lambda v: v['orderType'] == 'Limit', 
-                        session.get_open_orders(
-                            category='linear',
-                            settleCoin='USDT'
-                        )['result']['list']
-                    ))))
-                )
-                if positions:
-                    position = positions[0]
-                    symbol = position['symbol']
-                    round_ = await g_round_qty(symbol)
-                    round_price = round_[1]
-                    await asyncio.gather(
-                        s_tp(
-                            np.array((0.025, 0.007, *np.full(averaging_qty - 2, 0.02))),
-                            position['takeProfit'],
-                            position['side'],
-                            round_price,
-                            float(position['avgPrice']),
-                            limits_num,
-                            symbol
-                        ),
-                        s_sl(
-                            float(files_content['STOP_LOSS']),
-                            position['stopLoss'],
-                            position['side'],
-                            round_price,
-                            float(position['avgPrice']),
-                            limits_num,
-                            symbol
-                        ),
-                    )
-                elif positions == []:
-                    session.cancel_all_orders(category='linear', settleCoin='USDT')
-
-                global percent_change
-                percent_change = g_percent_change(*percent_changes_old)
-                if percent_change:
-                    time_percent = int(int(time.time()) * 1000)
-                    s_send_n(
-                        f'PC::\n\n'
-                        f'{percent_change[0]}, {round(percent_change[1] * 100, 2)}%\n'
-                        f'{datetime.now()}'
-                    )
-                    break
-            
-            '''SET ⭣
-            '''
-            if percent_change and positions == []:
-                symbol, changes = percent_change
-                # side = 'Buy' if changes < 0 else 'Sell'
-                side_non_validated = 'Buy' if changes < 0 else 'Sell'
-                side = g_side_validated(symbol, side_non_validated, time_percent)
-                if side:
-                    round_qty, price, balance = await g_data(symbol)
-                    qty = ((balance / price) * 0.011) * int(files_content['LEVERAGE'])
-                    distance_limits = np.float32(files_content['DISTANCE_LIMITS'].split(' '))
-                    await asyncio.gather(
-                        place_order(
-                            symbol, 
-                            s_round(qty, round_qty[0]),
-                            side
-                        ),
-                        place_orders_limits(
-                            symbol, 
-                            price,
-                            (distance_limits[0], *np.arange(1, averaging_qty) * distance_limits[1]),
-                            qty,
-                            float(files_content['VOLUME_MULTIPLIER']),
-                            round_qty,
-                            side
-                        )
-                    )
-                s_send_n(
-                    f'SIDE::\n\n'
-                    f'{side}'
-                )
-        except:
-            s_send_n(
-                f'TRACEBACK::\n\n'
-                f'{traceback.format_exc()}'
+    g_visualize(
+        x=data.index,
+        y=data["close"],
+        markers=(
+            dict(
+                data=data[data['Predicted Label'] == -1],
+                color='red',
+                name='Sell'
+            ),
+            dict(
+                data=data[data['Predicted Label'] == 1],
+                color='green',
+                name='Buy'
             )
+        )
+    )
 
-# s_pre_main()
-asyncio.run(main()) #⭠⭡⭢⭣⭤ ⭥⮂⮃
+main()
+
+# визуализировать все на графике и рядом с графиком 
