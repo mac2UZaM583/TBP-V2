@@ -53,7 +53,10 @@ def g_williams_r(
 def g_lorentzian_distances(feature_arrays, len_data):
     g_lorentzian_distance = lambda v_1, v_2: np.log(1 + np.abs(v_1 - v_2))
     return [
-        np.sum(g_lorentzian_distance(feature_arrays[i_][i], feature_arrays[i_ + 1][i]) for i_ in range(0, len(feature_arrays), 2))
+        np.sum(g_lorentzian_distance(
+            feature_arrays[i_][i], feature_arrays[i_ + 1][i]) 
+            for i_ in range(0, len(feature_arrays), 2)
+        )
         for i in range(len_data)
     ]
 
