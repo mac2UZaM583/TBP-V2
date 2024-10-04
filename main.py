@@ -1,10 +1,10 @@
 from g__.data_ import g_klines
-from g__.data_m import g_indicators_data
-from g__.data_f import (
-    g_train_test_split, 
+from g__.data_m import (
+    g_indicators_data,
     g_knn_predict,
     g_y,
 )
+from g__.data_f import g_train_test_split
 from vis import g_visualize
 
 import numpy as np

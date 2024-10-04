@@ -51,6 +51,12 @@ def g_williams_r(
     highest_high = high.rolling(window=period).max()
     return -100 * (highest_high - close) / (highest_high - low.rolling(window=period).min())
 
+def g_tsi(closed, period=14,):
+    return np.array([
+        np.corrcoef(closed[i:i + period], np.arange(len(closed))[i:i + period])[0, 1]
+        for i in range(len(closed) - period + 1)
+    ])
+
 def g_lorentzian_distances(feature_arrays, len_data):
     g_lorentzian_distance = lambda v_1, v_2: np.log(1 + np.abs(v_1 - v_2))
     return [
@@ -99,8 +105,12 @@ def g_y(
             (data[feature] > thresholds[0], data[feature] < thresholds[1])
             for feature, thresholds in features_add.items()
         ]
-        main_sell = np.logical_and(main_sell, np.all([cond[0] for cond in additional_conditions], axis=0))
-        main_buy = np.logical_and(main_buy, np.all([cond[1] for cond in additional_conditions], axis=0))
+        cond_1, cond_2 = zip(*[
+            [*cond]
+            for cond in additional_conditions
+        ])
+        main_sell = np.logical_and(main_sell, np.all(cond_1, axis=0))
+        main_buy = np.logical_and(main_buy, np.all(cond_2, axis=0))
     return np.where(main_sell, -1, np.where(main_buy, 1, 0))
 
 def g_knn_predict(
