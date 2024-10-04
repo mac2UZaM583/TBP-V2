@@ -1,5 +1,5 @@
 from g__.data_ import g_klines
-from g__.indicators import g_indicators_data
+from g__.data_m import g_indicators_data
 from g__.data_f import (
     g_train_test_split, 
     g_knn_predict,
