@@ -17,22 +17,17 @@ def g_rsi(data, period=14):
             .mean()
     ))
 
-def g_adx(
-    high, 
-    low, 
-    close, 
-    period=14
-):
+def g_adx(data, period=14):
     atr = pd.DataFrame({
-        'tr1': high - low, 
-        'tr2': np.abs(high - close.shift()), 
-        'tr3': np.abs(low - close.shift())
+        'tr1': data["high"] - data["low"], 
+        'tr2': np.abs(data["high"] - data["close"].shift()), 
+        'tr3': np.abs(data["low"] - data["close"].shift())
     })\
         .max(axis=1)\
         .rolling(window=period)\
         .mean()
-    high_diff = high.diff()
-    low_diff = low.diff()
+    high_diff = "high".diff()
+    low_diff = data["low"].diff()
     plus_di = 100 * (pd.Series(np.where(
         (high_diff > low_diff) & (high_diff > 0), 
         high_diff, 
@@ -59,19 +54,14 @@ def g_cci(data, period=20):
         .rolling(window=period)\
         .mean())
 
-def g_williams_r(
-    high, 
-    low, 
-    close, 
-    period=14
-):
-    highest_high = high.rolling(window=period).max()
-    return -100 * (highest_high - close) / (highest_high - low.rolling(window=period).min())
+def g_williams_r(data, period=14):
+    highest_high = data["high"].rolling(window=period).max()
+    return -100 * (highest_high - data["close"]) / (highest_high - data["low"].rolling(window=period).min())
 
-def g_tsi(closed, period=14,):
-    return closed\
+def g_tsi(data, period=14,):
+    return data["close"]\
         .rolling(window=period)\
-        .corr(pd.Series(np.arange(len(closed))))\
+        .corr(pd.Series(np.arange(len(data["close"]))))\
     
 def g_lorentzian_distances(feature_arrs, max_klines_back=500,):
     return np.sum([
@@ -93,10 +83,10 @@ def g_indicators_data(
     })
     choise_l1 = {
         "RSI": lambda: g_rsi(data),
-        "ADX": lambda: g_adx(data['high'], data['low'], data['close']),
+        "ADX": lambda: g_adx(data),
         "CCI":lambda: g_cci(data),
-        "WT": lambda: g_williams_r(data['high'], data['low'], data['close']),
-        "TSI": lambda: g_tsi(data["close"])
+        "WT": lambda: g_williams_r(data),
+        "TSI": lambda: g_tsi(data)
     }
     choise_l2 = {
         "LD": lambda: g_lorentzian_distances([data[el] for el in need_indicators_l1])
