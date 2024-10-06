@@ -72,7 +72,7 @@ def g_lorentzian_distances(feature_arrs, bars_back=500,):
     ], axis=0)
 
 def g_indicators_data(
-    klines, 
+    data, 
     in_need_l1={
         "RSI": dict(period=14,), 
         "ADX": dict(period=14,), 
@@ -82,11 +82,6 @@ def g_indicators_data(
     }, 
     in_need_l2={"LD": dict(bars_back=500,)}
 ):
-    data = pd.DataFrame({
-        'close': klines[:, 4],
-        'high': klines[:, 2],
-        'low': klines[:, 3],
-    })
     choise_l1 = {
         "RSI": lambda: g_rsi(data, **in_need_l1["RSI"]),
         "ADX": lambda: g_adx(data, **in_need_l1["ADX"]),
@@ -106,7 +101,7 @@ def g_indicators_data(
         .apply(lambda v: v.fillna(v.mean()))\
         [list(in_need_l1.keys()) + list(in_need_l2.keys()) + ["close", "high", "low",]]
 
-def g_y(
+def g_y_train(
     data, 
     feauture_main={"name": "RSI", "sell": 70, "buy": 30}, 
     features_add={}
