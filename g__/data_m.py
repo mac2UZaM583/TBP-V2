@@ -72,7 +72,6 @@ def g_tsi(closed, period=14,):
     return closed\
         .rolling(window=period)\
         .corr(pd.Series(np.arange(len(closed))))\
-        .to_numpy()
     
 def g_lorentzian_distances(feature_arrs, max_klines_back=500,):
     return np.sum([
