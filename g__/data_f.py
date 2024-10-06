@@ -1,6 +1,3 @@
-from sklearn.neighbors import KNeighborsClassifier
-import numpy as np
-
 def g_train_test_split(
     x, 
     y,

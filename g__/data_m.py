@@ -52,24 +52,22 @@ def g_williams_r(
     return -100 * (highest_high - close) / (highest_high - low.rolling(window=period).min())
 
 def g_tsi(closed, period=14,):
-    return np.array([
-        np.corrcoef(closed[i:i + period], np.arange(len(closed))[i:i + period])[0, 1]
-        for i in range(len(closed) - period + 1)
-    ])
-
-def g_lorentzian_distances(feature_arrays, len_data):
-    g_lorentzian_distance = lambda v_1, v_2: np.log(1 + np.abs(v_1 - v_2))
-    return [
-        np.sum(g_lorentzian_distance(
-            feature_arrays[i_][i], feature_arrays[i_ + 1][i]) 
-            for i_ in range(0, len(feature_arrays), 2)
-        )
-        for i in range(len_data)
-    ]
+    return pd.Series(closed)\
+        .rolling(window=period)\
+        .corr(pd.Series(np.arange(len(closed))))\
+        .to_numpy()
+    
+def g_lorentzian_distances(feature_arrs, max_klines_back=500,):
+    return np.sum([
+        feature_arr\
+            .rolling(window=max_klines_back)\
+            .apply(lambda v: np.log(1 + np.abs(v.iloc[0] - v.iloc[-1])))
+        for feature_arr in feature_arrs
+    ], axis=0)
 
 def g_indicators_data(
     klines, 
-    need_indicators_l1=["RSI", "ADX", "CCI", "WT",], 
+    need_indicators_l1=["RSI", "ADX", "CCI", "WT", "TSI"], 
     need_indicators_l2=["LD",]
 ):
     data = pd.DataFrame({
@@ -77,17 +75,23 @@ def g_indicators_data(
         'high': klines[:, 2],
         'low': klines[:, 3],
     })
-    choise = {
+    choise_l1 = {
         "RSI": lambda: g_rsi(data),
         "ADX": lambda: g_adx(data['high'], data['low'], data['close']),
         "CCI":lambda: g_cci(data),
         "WT": lambda: g_williams_r(data['high'], data['low'], data['close']),
+        "TSI": lambda: g_tsi(data["close"])
+    }
+    choise_l2 = {
+        "LD": lambda: g_lorentzian_distances([data[el] for el in need_indicators_l1])
     }
     for el in need_indicators_l1:
-        data[el] = choise[el]()
+        data[el] = choise_l1[el]()
     for el in need_indicators_l2:
-        data[el] = g_lorentzian_distances([data[el].values for el in need_indicators_l1], len(data))
-    return data.apply(lambda v: v.fillna(v.mean()))[need_indicators_l1 + need_indicators_l2 + ["close", "high", "low",]]
+        data[el] = choise_l2[el]()
+    return data\
+        .apply(lambda v: v.fillna(v.mean()))\
+        [need_indicators_l1 + need_indicators_l2 + ["close", "high", "low",]]
 
 def g_y(
     data, 
