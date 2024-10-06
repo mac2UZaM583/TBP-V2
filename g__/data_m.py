@@ -4,10 +4,18 @@ from sklearn.neighbors import KNeighborsClassifier
 
 def g_rsi(data, period=14):
     delta = data['close'].diff()
-    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-    rs = gain / loss
-    return 100 - (100 / (1 + rs))
+    return 100 - (100 / (
+        1
+        +
+        delta
+            .where(delta > 0, 0)
+            .rolling(window=period)
+            .mean()\
+        / 
+        (-delta.where(delta < 0, 0))
+            .rolling(window=period)
+            .mean()
+    ))
 
 def g_adx(
     high, 
@@ -39,8 +47,7 @@ def g_adx(
 def g_cci(data, period=20):
     typical_price = (data['high'] + data['low'] + data['close']) / 3
     sma = typical_price.rolling(window=period).mean()
-    mean_deviation = (typical_price - sma).abs().rolling(window=period).mean()
-    return (typical_price - sma) / (0.015 * mean_deviation)
+    return (typical_price - sma) / (0.015 * (typical_price - sma).abs().rolling(window=period).mean())
 
 def g_williams_r(
     high, 
