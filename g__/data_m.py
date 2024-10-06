@@ -93,11 +93,14 @@ def g_indicators_data(
         "LD": lambda v: g_lorentzian_distances(v)
     }
     for el in in_need_l1:
-        data["INDCS/ " + el] = choise_l1[el]()
-    l1 = [data["INDCS/ " + el] for el in in_need_l1]
+        data[el] = choise_l1[el]()
+    l1 = [data[el] for el in in_need_l1]
     for el in in_need_l2:
-        data["INDCS/ " + el] = choise_l2[el](l1)
-    return data[list("INDCS/ " + np.array(list(in_need_l1.keys()) + list(in_need_l2.keys()))) + ["close", "high", "low",]]
+        data[el] = choise_l2[el](l1)
+    return data.rename(columns={
+        name: "INDCS/ " + name
+        for name in list(in_need_l1.keys()) + list(in_need_l2.keys())
+    })
 
 def g_y_train(
     data, 

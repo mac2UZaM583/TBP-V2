@@ -24,26 +24,27 @@ def main():
         g_y_train(data), 
         test=True,
     )
-    # data['Predicted Label'] = np.nan 
-    # data["train_label"] = np.nan
-    # data.loc[x_test.index, 'Predicted Label'] = g_knn_predict(x_train, y_train, x_test) 
-    # data.loc[x_train.index, "train_label"] = y_train
-    # g_visualize(
-    #     x=data.index,
-    #     y=data["close"],
-    #     markers=(
-    #         dict(
-    #             data=data[data['train_label'] == -1],
-    #             color='red',
-    #             name='Sell'
-    #         ),
-    #         dict(
-    #             data=data[data['train_label'] == 1],
-    #             color='green',
-    #             name='Buy'
-    #         )
-    #     )
-    # )
+    print(data)
+    data['Predicted Label'] = np.nan 
+    data["train_label"] = np.nan
+    data.loc[x_test.index, 'Predicted Label'] = g_knn_predict(x_train, y_train, x_test) 
+    data.loc[x_train.index, "train_label"] = y_train
+    g_visualize(
+        x=data.index,
+        y=data["close"],
+        markers=(
+            dict(
+                data=data[data['train_label'] == -1],
+                color='red',
+                name='Sell'
+            ),
+            dict(
+                data=data[data['train_label'] == 1],
+                color='green',
+                name='Buy'
+            )
+        )
+    )
 
 main()
 
