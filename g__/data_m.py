@@ -27,22 +27,29 @@ def g_adx(
         'tr1': high - low, 
         'tr2': np.abs(high - close.shift()), 
         'tr3': np.abs(low - close.shift())
-    }).max(axis=1).rolling(window=period).mean()
+    })\
+        .max(axis=1)\
+        .rolling(window=period)\
+        .mean()
     high_diff = high.diff()
     low_diff = low.diff()
     plus_di = 100 * (pd.Series(np.where(
         (high_diff > low_diff) & (high_diff > 0), 
         high_diff, 
         0
-    )).rolling(window=period).mean() / atr)
+    ))\
+        .rolling(window=period)\
+        .mean() / atr)
     minus_di = 100 * (pd.Series(np.where(
         (low_diff > high_diff) & (low_diff > 0), 
         low_diff, 
         0
-    )).rolling(window=period).mean() / atr)
-
-    dx = 100 * (np.abs(plus_di - minus_di) / (plus_di + minus_di))
-    return dx.rolling(window=period).mean()
+    ))\
+        .rolling(window=period)\
+        .mean() / atr)
+    return (100 * (np.abs(plus_di - minus_di) / (plus_di + minus_di)))\
+        .rolling(window=period)\
+        .mean()
 
 def g_cci(data, period=20):
     typical_price = (data['high'] + data['low'] + data['close']) / 3
@@ -59,7 +66,7 @@ def g_williams_r(
     return -100 * (highest_high - close) / (highest_high - low.rolling(window=period).min())
 
 def g_tsi(closed, period=14,):
-    return pd.Series(closed)\
+    return closed\
         .rolling(window=period)\
         .corr(pd.Series(np.arange(len(closed))))\
         .to_numpy()
