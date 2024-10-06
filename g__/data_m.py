@@ -93,13 +93,11 @@ def g_indicators_data(
         "LD": lambda v: g_lorentzian_distances(v)
     }
     for el in in_need_l1:
-        data[el] = choise_l1[el]()
-    l1 = [data[el] for el in in_need_l1]
+        data["INDCS/ " + el] = choise_l1[el]()
+    l1 = [data["INDCS/ " + el] for el in in_need_l1]
     for el in in_need_l2:
-        data[el] = choise_l2[el](l1)
-    return data\
-        .apply(lambda v: v.fillna(v.mean()))\
-        [list(in_need_l1.keys()) + list(in_need_l2.keys()) + ["close", "high", "low",]]
+        data["INDCS/ " + el] = choise_l2[el](l1)
+    return data[list("INDCS/ " + np.array(list(in_need_l1.keys()) + list(in_need_l2.keys()))) + ["close", "high", "low",]]
 
 def g_y_train(
     data, 
@@ -109,12 +107,12 @@ def g_y_train(
     # rsi 70 30
     # tsi (0.8, 0.97, 0.87, 0.95, 0.8) 
     
-    main_sell = data[feauture_main["name"]] > feauture_main["sell"]
-    main_buy =  data[feauture_main["name"]] < feauture_main["buy"]
+    main_sell = data["INDCS/ " + feauture_main["name"]] > feauture_main["sell"]
+    main_buy =  data["INDCS/ " + feauture_main["name"]] < feauture_main["buy"]
     
     if features_add:
         additional_conditions = [
-            (data[feature] > thresholds[0], data[feature] < thresholds[1])
+            (data["INDCS/ " + feature] > thresholds[0], data["INDCS/ " + feature] < thresholds[1])
             for feature, thresholds in features_add.items()
         ]
         cond_1, cond_2 = zip(*[

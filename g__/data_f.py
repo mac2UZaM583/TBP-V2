@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 def g_klines_splitting(klines):
     return pd.DataFrame({
@@ -12,8 +13,12 @@ def g_train_test_split(
     y,
     test=False,
     train_size=0.8,
-    cutback=0,
 ):  
+    cutback = np.max([
+        index 
+        for column in x.columns 
+        for index in x[column].index[x[column].isna()]
+    ]) + 1
     x = x[cutback:]
     y = y[cutback:]
     split_func = lambda v, len_: tuple(
