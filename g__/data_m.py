@@ -54,7 +54,10 @@ def g_adx(
 def g_cci(data, period=20):
     typical_price = (data['high'] + data['low'] + data['close']) / 3
     sma = typical_price.rolling(window=period).mean()
-    return (typical_price - sma) / (0.015 * (typical_price - sma).abs().rolling(window=period).mean())
+    return (typical_price - sma) / (0.015 * (typical_price - sma)\
+        .abs()\
+        .rolling(window=period)\
+        .mean())
 
 def g_williams_r(
     high, 
