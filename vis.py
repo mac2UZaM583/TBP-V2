@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 def g_visualize(
     x,
     y,
-    markers=None,
+    markers=(),
 
 ):
     fig = go.Figure()
