@@ -30,10 +30,9 @@ def main():
         test=True,
         cutback=cutback,
     )
-    y_pred = g_knn_predict(x_train, y_train, x_test) 
     data['Predicted Label'] = np.nan 
     data["train_label"] = np.nan
-    data.loc[x_test.index, 'Predicted Label'] = y_pred 
+    data.loc[x_test.index, 'Predicted Label'] = g_knn_predict(x_train, y_train, x_test) 
     data.loc[x_train.index, "train_label"] = y_train
     g_visualize(
         x=data.index,
@@ -51,7 +50,7 @@ def main():
             )
         )
     )
-# while True:
+
 main()
 
 # визуализировать все на графике и рядом с графиком 
