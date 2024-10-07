@@ -124,14 +124,24 @@ def g_y_train(
         ])
         main_sell = np.logical_and(main_sell, np.all(cond_1, axis=0))
         main_buy = np.logical_and(main_buy, np.all(cond_2, axis=0))
-    return np.where(main_sell, -1, np.where(main_buy, 1, 0))
+    return pd.Series(np.where(main_sell, -1, np.where(main_buy, 1, 0)))
+
+def g_df_fill(
+    data, 
+    columns, 
+    value=np.nan
+):
+    for column in columns:
+        data[column] = value
+    return data
+
 
 def g_knn_predict(
-    x, 
-    y, 
+    x_train, 
     x_test, 
+    y_train, 
     n_neighbors=3
 ):
     knn = KNeighborsClassifier(n_neighbors=n_neighbors)
-    knn.fit(x, y)
+    knn.fit(x_train, y_train)
     return knn.predict(x_test)

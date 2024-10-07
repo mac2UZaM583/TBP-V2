@@ -21,12 +21,12 @@ def g_train_test_split(
     ]) + 1
     x = x[cutback:]
     y = y[cutback:]
-    split_func = lambda v, len_: tuple(
+    split_func = lambda v, len_: [
         v[i][len_:] 
         if i % 2 != 0 
         else v[i][:len_]
         for i in range(4) 
-    )
+    ]
     tple = (x, x, y, y)
     if test:
         return split_func(tple, int(len(x) * train_size))
