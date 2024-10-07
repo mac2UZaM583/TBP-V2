@@ -24,25 +24,26 @@ def main():
         g_y_train(data), 
         test=True,
     )
-    data = g_df_fill(data, ["predicted_label", "train_label"])
-    data.loc[x_test.index, 'predicted_label'] = g_knn_predict(x_train, x_test, y_train,) 
-    data.loc[x_train.index, "train_label"] = y_train
-    g_visualize(
-        x=data.index,
-        y=data["close"],
-        markers=(
-            dict(
-                data=data[data['train_label'] == -1],
-                color='red',
-                name='Sell'
-            ),
-            dict(
-                data=data[data['train_label'] == 1],
-                color='green',
-                name='Buy'
-            )
-        )
-    )
+    # data = g_df_fill(data, ["predicted_label", "train_label"])
+    # data.loc[x_test.index, 'predicted_label'] = g_knn_predict(x_train, x_test, y_train,) 
+    # data.loc[x_train.index, "train_label"] = y_train
+    # print(data[[column for column in data.columns if "INDCS/ " in column]])
+    # g_visualize(
+    #     x=data.index,
+    #     y=data["close"],
+    #     markers=(
+    #         dict(
+    #             data=data[data['train_label'] == -1],
+    #             color='red',
+    #             name='Sell'
+    #         ),
+    #         dict(
+    #             data=data[data['train_label'] == 1],
+    #             color='green',
+    #             name='Buy'
+    #         )
+    #     )
+    # )
 
 main()
 

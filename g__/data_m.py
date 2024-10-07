@@ -26,22 +26,16 @@ def g_adx(data, period=14):
         .max(axis=1)\
         .rolling(window=period)\
         .mean()
-    high_diff = data["high"].diff()
-    low_diff = data["low"].diff()
-    plus_di = 100 * (pd.Series(np.where(
-        (high_diff > low_diff) & (high_diff > 0), 
-        high_diff, 
-        0
-    ))\
-        .rolling(window=period)\
-        .mean() / atr)
-    minus_di = 100 * (pd.Series(np.where(
-        (low_diff > high_diff) & (low_diff > 0), 
-        low_diff, 
-        0
-    ))\
-        .rolling(window=period)\
-        .mean() / atr)
+    low_diff, high_diff = map(lambda v: v.diff(), (data["low"], data["high"]))
+    calculate_di = lambda v1, v2: 100 * (
+        pd.Series(np.where((v1 > v2) & (v1 > 0), v1, 0))
+            .rolling(window=period)
+            .mean()
+        / atr
+    )
+    minus_di = calculate_di(low_diff, high_diff)
+    plus_di = calculate_di(high_diff, low_diff)
+
     return (100 * (np.abs(plus_di - minus_di) / (plus_di + minus_di)))\
         .rolling(window=period)\
         .mean()
@@ -56,7 +50,12 @@ def g_cci(data, period=20):
 
 def g_williams_r(data, period=14):
     highest_high = data["high"].rolling(window=period).max()
-    return -100 * (highest_high - data["close"]) / (highest_high - data["low"].rolling(window=period).min())
+    return -100 * (highest_high - data["close"]) / (
+        highest_high - 
+        data["low"]
+            .rolling(window=period)
+            .min()
+    )
 
 def g_tsi(data, period=14,):
     return data["close"]\
@@ -110,20 +109,23 @@ def g_y_train(
     # rsi 70 30
     # tsi (0.8, 0.97, 0.87, 0.95, 0.8) 
     
-    main_sell = data["INDCS/ " + feauture_main["name"]] > feauture_main["sell"]
-    main_buy =  data["INDCS/ " + feauture_main["name"]] < feauture_main["buy"]
+    feauture_main["name"] = "INDCS/ " + feauture_main["name"]
+    for column in features_add:
+        features_add[column] = "INDCS/ " + features_add[column]
+    main_sell = data[feauture_main["name"]] > feauture_main["sell"]
+    main_buy =  data[feauture_main["name"]] < feauture_main["buy"]
     
     if features_add:
-        additional_conditions = [
-            (data["INDCS/ " + feature] > thresholds[0], data["INDCS/ " + feature] < thresholds[1])
-            for feature, thresholds in features_add.items()
+        main_sell, main_buy = [
+            np.logical_and(side, np.all(cond, axis=0)) 
+            for side, cond in zip(
+                (main_sell, main_buy), 
+                zip(*[[*cond] for cond in [
+                    (data[feature] > thresholds[0], data[feature] < thresholds[1])
+                    for feature, thresholds in features_add.items()
+                ]])
+            )
         ]
-        cond_1, cond_2 = zip(*[
-            [*cond]
-            for cond in additional_conditions
-        ])
-        main_sell = np.logical_and(main_sell, np.all(cond_1, axis=0))
-        main_buy = np.logical_and(main_buy, np.all(cond_2, axis=0))
     return pd.Series(np.where(main_sell, -1, np.where(main_buy, 1, 0)))
 
 def g_df_fill(
