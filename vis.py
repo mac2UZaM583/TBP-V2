@@ -5,7 +5,7 @@ def g_visualize(
     y,
     markers_target,
     markers_settings=(),
-
+    add_metrics={},
 ):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=x, y=y, mode='lines', name='Close Price'))

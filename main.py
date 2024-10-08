@@ -28,9 +28,12 @@ def main():
         ),
         test=True,
     )
-    data = g_df_fill(data, ["predicted_label", "train_label"])
-    data.loc[x_test.index, 'predicted_label'] = g_knn_predict(x_train, x_test, y_train,) 
-    data.loc[x_train.index, "train_label"] = y_train
+    data = g_df_replace(
+        data=data,
+        columns=["train_label", "predicted_label"],
+        indeces=(x_train.index, x_test.index),
+        replace=(y_train, g_knn_predict(x_train, x_test, y_train,))
+    )
     g_visualize(
         x=data.index,
         y=data["close"],

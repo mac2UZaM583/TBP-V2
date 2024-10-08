@@ -133,15 +133,25 @@ def g_y_train(
         ]
     return pd.Series(np.where(main_sell, -1, np.where(main_buy, 1, 0)))
 
-def g_df_fill(
+def g_df_replace(
     data, 
     columns, 
-    value=np.nan
+    indeces, 
+    replace,
 ):
-    for column in columns:
-        data[column] = value
+    def g_df_fill(
+        data, 
+        columns, 
+        value=np.nan
+    ):
+        for column in columns:
+            data[column] = value
+        return data
+    
+    data = g_df_fill(data, columns)
+    for i in range(len(indeces)):
+        data.loc[indeces[i], columns[i]] = replace[i]
     return data
-
 
 def g_knn_predict(
     x_train, 
