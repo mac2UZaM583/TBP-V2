@@ -32,7 +32,7 @@ def g_train_test_split(
         return split_func(tple, int(len(x) * train_size))
     return split_func(tple, -1)
 
-def g_df_replace(
+def g_df_create_replace(
     data, 
     columns, 
     indeces, 

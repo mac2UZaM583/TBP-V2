@@ -28,31 +28,29 @@ def main():
         ),
         test=True,
     )
-    data = g_df_replace(
-        data=data,
-        columns=["train_label", "predicted_label"],
-        indeces=(x_train.index, x_test.index),
-        replace=(y_train, g_knn_predict(x_train, x_test, y_train,))
-    )
-    g_visualize(
-        x=data.index,
-        y=data["close"],
-        markers_target=data["train_label"],
-        markers_settings=(
-            dict(
-                class_=-1,
-                color='red',
-                name='Sell'
-            ),
-            dict(
-                class_=1,
-                color='green',
-                name='Buy'
-            )
-        )
-    )
+    print(data.loc[data["INDCS/ RSI"] > 70].loc[500:510, ["INDCS/ RSI"]])
+    # data = g_df_create_replace(
+    #     data=data,
+    #     columns=["train_label", "predicted_label"],
+    #     indeces=(x_train.index, x_test.index),
+    #     replace=(y_train, g_knn_predict(x_train, x_test, y_train,))
+    # )
+    # g_visualize(
+    #     x=data.index,
+    #     y=data["close"],
+    #     markers_target=data["train_label"],
+    #     markers_settings=(
+    #         dict(
+    #             class_=-1,
+    #             color='red',
+    #             name='Sell'
+    #         ),
+    #         dict(
+    #             class_=1,
+    #             color='green',
+    #             name='Buy'
+    #         )
+    #     )
+    # )
 
 main()
-
-# отобразить на графике индкаторы и составить наилучшие значения
-# визуализировать все на графике и рядом с графиком 
