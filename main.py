@@ -29,28 +29,28 @@ def main():
         test=True,
     )
     print(data.loc[data["INDCS/ RSI"] > 70].loc[500:510, ["INDCS/ RSI"]])
-    # data = g_df_create_replace(
-    #     data=data,
-    #     columns=["train_label", "predicted_label"],
-    #     indeces=(x_train.index, x_test.index),
-    #     replace=(y_train, g_knn_predict(x_train, x_test, y_train,))
-    # )
-    # g_visualize(
-    #     x=data.index,
-    #     y=data["close"],
-    #     markers_target=data["train_label"],
-    #     markers_settings=(
-    #         dict(
-    #             class_=-1,
-    #             color='red',
-    #             name='Sell'
-    #         ),
-    #         dict(
-    #             class_=1,
-    #             color='green',
-    #             name='Buy'
-    #         )
-    #     )
-    # )
+    data = g_df_create_replace(
+        data=data,
+        columns=["train_label", "predicted_label"],
+        range_=(x_train.index, x_test.index),
+        replace=(y_train, g_knn_predict(x_train, x_test, y_train,))
+    )
+    g_visualize(
+        x=data.index,
+        y=data["close"],
+        markers_target=data["train_label"],
+        markers_settings=(
+            dict(
+                class_=-1,
+                color='red',
+                name='Sell'
+            ),
+            dict(
+                class_=1,
+                color='green',
+                name='Buy'
+            )
+        )
+    )
 
 main()

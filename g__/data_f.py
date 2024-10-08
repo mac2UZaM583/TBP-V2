@@ -35,7 +35,7 @@ def g_train_test_split(
 def g_df_create_replace(
     data, 
     columns, 
-    indeces, 
+    range_, 
     replace,
 ):
     def g_df_fill(
@@ -48,6 +48,6 @@ def g_df_create_replace(
         return data
     
     data = g_df_fill(data, columns)
-    for i in range(len(indeces)):
-        data.loc[indeces[i], columns[i]] = replace[i]
+    for i in range(len(range_)):
+        data.loc[range_[i], columns[i]] = replace[i]
     return data
