@@ -106,9 +106,6 @@ def g_y_train(
     feauture_main={"name": "RSI", "sell": 70, "buy": 30}, 
     features_add={}
 ):
-    # rsi 70 30
-    # tsi (0.8, 0.97, 0.87, 0.95, 0.8) 
-    
     feauture_main["name"] = "INDCS/ " + feauture_main["name"]
     for i in range(len(features_add)):
         key_ = list(features_add.keys())[i]
@@ -132,26 +129,6 @@ def g_y_train(
             )
         ]
     return pd.Series(np.where(main_sell, -1, np.where(main_buy, 1, 0)))
-
-def g_df_replace(
-    data, 
-    columns, 
-    indeces, 
-    replace,
-):
-    def g_df_fill(
-        data, 
-        columns, 
-        value=np.nan
-    ):
-        for column in columns:
-            data[column] = value
-        return data
-    
-    data = g_df_fill(data, columns)
-    for i in range(len(indeces)):
-        data.loc[indeces[i], columns[i]] = replace[i]
-    return data
 
 def g_knn_predict(
     x_train, 

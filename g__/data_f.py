@@ -31,3 +31,23 @@ def g_train_test_split(
     if test:
         return split_func(tple, int(len(x) * train_size))
     return split_func(tple, -1)
+
+def g_df_replace(
+    data, 
+    columns, 
+    indeces, 
+    replace,
+):
+    def g_df_fill(
+        data, 
+        columns, 
+        value=np.nan
+    ):
+        for column in columns:
+            data[column] = value
+        return data
+    
+    data = g_df_fill(data, columns)
+    for i in range(len(indeces)):
+        data.loc[indeces[i], columns[i]] = replace[i]
+    return data
