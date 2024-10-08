@@ -21,30 +21,35 @@ def main():
     )
     x_train, x_test, y_train, y_test = g_train_test_split(
         data[[column for column in data.columns if "INDCS/ " in column]], 
-        g_y_train(data), 
+        g_y_train(
+            data, 
+            feauture_main={"name": "RSI", "sell": 70, "buy": 30},
+            features_add={"ADX": (20, 40, True)}
+        ),
         test=True,
     )
-    # data = g_df_fill(data, ["predicted_label", "train_label"])
-    # data.loc[x_test.index, 'predicted_label'] = g_knn_predict(x_train, x_test, y_train,) 
-    # data.loc[x_train.index, "train_label"] = y_train
-    # print(data[[column for column in data.columns if "INDCS/ " in column]])
-    # g_visualize(
-    #     x=data.index,
-    #     y=data["close"],
-    #     markers=(
-    #         dict(
-    #             data=data[data['train_label'] == -1],
-    #             color='red',
-    #             name='Sell'
-    #         ),
-    #         dict(
-    #             data=data[data['train_label'] == 1],
-    #             color='green',
-    #             name='Buy'
-    #         )
-    #     )
-    # )
+    data = g_df_fill(data, ["predicted_label", "train_label"])
+    data.loc[x_test.index, 'predicted_label'] = g_knn_predict(x_train, x_test, y_train,) 
+    data.loc[x_train.index, "train_label"] = y_train
+    g_visualize(
+        x=data.index,
+        y=data["close"],
+        markers_target=data["train_label"],
+        markers_settings=(
+            dict(
+                class_=-1,
+                color='red',
+                name='Sell'
+            ),
+            dict(
+                class_=1,
+                color='green',
+                name='Buy'
+            )
+        )
+    )
 
 main()
 
+# отобразить на графике индкаторы и составить наилучшие значения
 # визуализировать все на графике и рядом с графиком 

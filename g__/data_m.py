@@ -110,18 +110,23 @@ def g_y_train(
     # tsi (0.8, 0.97, 0.87, 0.95, 0.8) 
     
     feauture_main["name"] = "INDCS/ " + feauture_main["name"]
-    for column in features_add:
-        features_add[column] = "INDCS/ " + features_add[column]
+    for i in range(len(features_add)):
+        key_ = list(features_add.keys())[i]
+        features_add["INDCS/ " + key_] = features_add.pop(key_)
     main_sell = data[feauture_main["name"]] > feauture_main["sell"]
     main_buy =  data[feauture_main["name"]] < feauture_main["buy"]
     
     if features_add:
+        invert_func = lambda v, bool_: np.invert(v) if bool_ else v
         main_sell, main_buy = [
             np.logical_and(side, np.all(cond, axis=0)) 
             for side, cond in zip(
                 (main_sell, main_buy), 
                 zip(*[[*cond] for cond in [
-                    (data[feature] > thresholds[0], data[feature] < thresholds[1])
+                    invert_func((
+                        (data[feature] > thresholds[0]), 
+                        ((data[feature] < thresholds[1]) if thresholds[1] != None else (data[feature] > thresholds[0])) 
+                    ), thresholds[2])
                     for feature, thresholds in features_add.items()
                 ]])
             )

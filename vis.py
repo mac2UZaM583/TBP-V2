@@ -3,22 +3,23 @@ import plotly.graph_objects as go
 def g_visualize(
     x,
     y,
-    markers=(),
+    markers_target,
+    markers_settings=(),
 
 ):
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=x, y=y, mode='lines', name='Close Price'))
 
-    for el in markers:
+    for el in markers_settings:
+        if_key = markers_target == el["class_"]
         fig.add_trace(go.Scatter(
-            x=el["data"].index, 
-            y=el["data"]['close'], 
+            x=markers_target[if_key].index, 
+            y=y[if_key], 
             mode='markers', 
             marker=dict(size=10, color=el["color"]), 
             name=el["name"]
         ))
 
-    # Настройка макета графика
     fig.update_layout(
         title='Price with Predicted Buy Signals',
         xaxis_title='Date',
