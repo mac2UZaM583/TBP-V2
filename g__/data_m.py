@@ -115,6 +115,7 @@ def g_y_train(
     
     if features_add:
         invert_func = lambda v, bool_: np.invert(v) if bool_ else v
+        # fill_func = 
         main_sell, main_buy = [
             np.logical_and(side, np.all(cond, axis=0)) 
             for side, cond in zip(

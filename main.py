@@ -24,12 +24,11 @@ def main():
         g_y_train(
             data, 
             feauture_main={"name": "RSI", "sell": 70, "buy": 30},
-            features_add={"ADX": (20, 40, True)}
+            # features_add={"ADX": (20, 40, True)}
         ),
         test=True,
     )
-    print(data.loc[data["INDCS/ RSI"] > 70].loc[500:510, ["INDCS/ RSI"]])
-    data = g_df_create_replace(
+    data = g_df_range_create(
         data=data,
         columns=["train_label", "predicted_label"],
         range_=(x_train.index, x_test.index),
